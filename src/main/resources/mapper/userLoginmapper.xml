@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kill_rear.mapper.UserLoginMapper">
+    
+    <select id="queryAll" resultType="com.kill_rear.pojo.User">
+        select * from users
+    </select>
+
+    <insert id="add" parameterType="com.kill_rear.pojo.User">
+        insert into users (account, password) values (#{username},#{password})
+    </insert>
+
+    <select id="queryUser" resultType="com.kill_rear.pojo.User">
+        select * from users where account = #{username} and password = #{password}
+    </select>
+
+</mapper>

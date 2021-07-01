@@ -1,0 +1,5 @@
+ajax包下是传统url请求的控制器
+
+WebSocketServer是websocket形式的总的控制类，它根据前端的数据字段，调用下一层的控制类
+
+除了ajax文件下，其余的都是websocket形式的处理类。
