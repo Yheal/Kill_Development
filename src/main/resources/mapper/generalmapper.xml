@@ -17,10 +17,13 @@
                generals.name,
                generals.blood,
                generals.gimage,
-               generalskill.general_skill_name,
-               generalskill.audio
-            from generals, generalskill
+            from generals
             where generals.general_id = #{generalId}
-                and generalskill.general_id = generals.general_id
+    </select>
+
+    <select id="querySkill" resultType="com.kill_rear.dao.GeneralSkillDao">
+        select general_skill_name,audio
+            from generalskill
+            where generalskill.general_id = #{generalId}
     </select>
 </mapper>

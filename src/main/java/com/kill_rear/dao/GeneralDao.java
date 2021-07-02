@@ -11,8 +11,7 @@ import lombok.NoArgsConstructor;
 public class GeneralDao {
     int generalId, blood;
     String category, name;
-    String gImage, auido;
-    String general_skill_name;
+    String gImage;
 
     public int getGeneralId() { return generalId;}
 }

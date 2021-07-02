@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.kill_rear.dao.GeneralDao;
+import com.kill_rear.gamebo.game.general.General;
 import com.kill_rear.mapper.GeneralMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,22 +18,23 @@ public class GeneralService {
     GeneralMapper generalMapper;
 
     private static int maxGenerals = 1000;
-    private static List<GeneralDao> generalsCache = new ArrayList<>(maxGenerals);
+    private static List<General> generalsCache = new ArrayList<>(maxGenerals);
 
 
-    public List<GeneralDao> queryUserOwns(String account) {        
+    public List<General> queryUserOwns(String account) {        
         
-        List<GeneralDao> res = new ArrayList<GeneralDao>();
+        /*
+        List<General> res = new ArrayList<General>();
         List<Integer> ownGeneralIds = generalMapper.queryOwnGeneralId(account);
         
         for(Integer i:ownGeneralIds) {
             if(generalsCache.get(i) == null) {
-                GeneralDao generalDao = generalMapper.queryGeneralByid(i);
+                General generalDao = generalMapper.queryGeneralByid(i);
                 generalsCache.set(generalDao.getGeneralId(), generalDao);
             } 
             res.add(generalsCache.get(i));
         }
-        
+        */
         return res;
     }
 
