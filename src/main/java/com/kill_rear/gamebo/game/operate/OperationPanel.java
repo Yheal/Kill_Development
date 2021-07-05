@@ -34,15 +34,16 @@ public class OperationPanel {
     /* 判定区 */
     public Stack<Card> judge;
 
-    public OperationPanel() {
-        state = PlayerState.COMMON;
-        sha = false;
-        blood = 4;                // 血量默认为4
-        attackDistance  = reachDistance = 1;   // 距离默认为1
-        general = null;                        // 先填为空
+    public OperationPanel(int number, int blood, General general) {
+        
+        this.state = PlayerState.COMMON;
+        this.sha = false;
+        this.blood = blood;                // 血量默认为4
+        this.attackDistance  = this.reachDistance = 1;   // 距离默认为1
+        this.general = general;                        // 先填为空
         
         /* 交互数据结构 */
-        playerSelect = null;                   // 玩家是否选中               
+        playerSelect = new boolean[number];                   // 玩家是否选中               
         handCards = new ArrayList<Card>();                      // 手牌 
         equipment = new Card[4];               // 装备
         judge = new Stack<Card>();        // 判定区

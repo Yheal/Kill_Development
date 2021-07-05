@@ -11,7 +11,9 @@ import javax.websocket.server.ServerEndpoint;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.kill_rear.controller.init.GameInitController;
 import com.kill_rear.controller.match.MatchController;
+import com.kill_rear.controller.play.PlayController;
 import com.kill_rear.service.common.SessionPools;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +38,20 @@ public class WebSocketServer {
         WebSocketServer.matchController = matchController;
     } 
 
+    private static GameInitController gameInitController;
+    @Autowired
+    public static void setGameInitController(GameInitController gameInitController) {
+        WebSocketServer.gameInitController = gameInitController;
+    }
+
+    private static PlayController playController;
+    @Autowired
+    public static void setPlayController(PlayController playController) {
+        WebSocketServer.playController = playController;
+    }
+
     private Session session;
     private HttpSession httpSession;
-
 
     @OnOpen
     public void onOpen(Session session, EndpointConfig config) {
@@ -73,8 +86,13 @@ public class WebSocketServer {
             case "match":
                 matchController.handleMessage(username, jsonObj.getJSONObject("data"));
                 break;
+            case "init":
+                gameInitController.handleMessage(username, jsonObj.getJSONObject("data"));
+                break;
             case "play":
-                // 这里属于打游戏的服务
+                // 游戏进行时的服务
+                playController.handleMessage(username, jsonObj.getJSONObject("data"));
+                break;
         }
     }
 

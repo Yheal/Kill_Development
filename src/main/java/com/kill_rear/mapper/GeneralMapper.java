@@ -14,6 +14,9 @@ import org.springframework.stereotype.Repository;
 public interface GeneralMapper {
 
     public List<Integer> queryOwnGeneralId(String account);
-    public GeneralDao queryGeneralByid(int generalId);
-    public List<GeneralSkillDao> querySkill(int generalId);
+    public List<GeneralDao> queryAllGeneral();
+    public List<GeneralSkillDao> queryAllSkill();
+    public List<GeneralSkillDao> querySkillById(int generalId);
+    public GeneralDao queryGeneralById(int generalId);
+
 }

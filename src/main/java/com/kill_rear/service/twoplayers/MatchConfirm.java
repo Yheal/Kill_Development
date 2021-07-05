@@ -7,10 +7,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.kill_rear.service.common.SessionPools;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 
-@Component
+@Service
 public class MatchConfirm {
 
     @Autowired

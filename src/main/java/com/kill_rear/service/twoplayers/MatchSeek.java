@@ -8,11 +8,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.kill_rear.service.common.SessionPools;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 // 双人匹配模式的匹配队列
 
-@Component
+@Service
 public class MatchSeek {
     // 可以自定义你想要的匹配方式, 例如按照玩家的等级、身份、武将数等因随进行匹配
     // 为了实现上面的按因素匹配，利用用户的account在数据库中查找对应的信息，然后做成不同匹配集合即可

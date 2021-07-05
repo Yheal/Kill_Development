@@ -8,18 +8,20 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kill_rear.common.util.Pair;
-import com.kill_rear.dao.GeneralDao;
+import com.kill_rear.gamebo.game.edition.EditionType;
+import com.kill_rear.gamebo.game.general.General;
+import com.kill_rear.gamebo.room.GameRunner;
 import com.kill_rear.service.MyService;
 import com.kill_rear.service.ajax.GeneralService;
 import com.kill_rear.service.common.RoomManager;
 import com.kill_rear.service.common.SessionPools;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 
 
-@Component
+@Service
 public class GameInit implements MyService{
     
 
@@ -31,6 +33,9 @@ public class GameInit implements MyService{
 
     @Autowired
     GeneralService generalService;
+
+    @Autowired
+    RunTimeForTwo runtimeTwo;
 
     // 初始化游戏所需数据以及技能的服务类，主要包括两项：
     // 1、一个房间对战数据结构，主要就是起始的卡牌、武将、玩家的血量等信息
@@ -44,8 +49,25 @@ public class GameInit implements MyService{
 
     @Override
     public void handleMessage(String username, JSONObject dataObj) {
-        // 处理数据
-        // roomManager.setRoomData(roomId, new RoomDataTwo(roomId, players, EditionType.STANDARD));
+        
+        int roomId = dataObj.getIntValue("roomId"), choose = dataObj.getIntValue("chooseId"), chooseFinished = 0;
+        ArrayList<Pair<String, Integer>> playerChoose = generalChoose.get(roomId);
+        
+        // 为已经选好武将的玩家，记录对应的武将ID
+        for(Pair<String, Integer> pair:playerChoose) {
+            if(pair.getFirst().equals(username)) {
+                pair.setSecond(choose);
+                chooseFinished++;
+            }
+            if(pair.getSecond() != -1) {
+                chooseFinished++;
+            }
+        }
+
+        if(chooseFinished == playerChoose.size()) {
+            launchGame(roomId);
+        }
+         
     }
 
 
@@ -75,28 +97,28 @@ public class GameInit implements MyService{
     }
 
 
-    
     // 执行分配武将功能，也是游戏初始化的收尾工作
     public void allocateGeneral(int roomId, ArrayList<String> players) {
         // 请注意，每人原本分配3张，但是可能玩家拥有的武将数不够，甚至完全没有武将，所以这里分配1张
         
-        HashMap<String, ArrayList<GeneralDao>> playerOwns = new HashMap<String, ArrayList<GeneralDao>>();
+        HashMap<String, ArrayList<General>> playerOwns = new HashMap<String, ArrayList<General>>();
         // 已选择武将
         Set<Integer> choosed = new HashSet<>();
-        HashMap<String, ArrayList<GeneralDao>> generalChoosen = new HashMap<>();
+        HashMap<String, ArrayList<General>> generalChoosen = new HashMap<>();
 
         for(String p:players) {
-            playerOwns.put(p, (ArrayList<GeneralDao>) generalService.queryUserOwns(p));
-            generalChoosen.put(p, new ArrayList<GeneralDao>());
+            playerOwns.put(p, (ArrayList<General>)generalService.queryUserOwns(p));
+            generalChoosen.put(p, new ArrayList<General>());
         }
 
         // 按照player的顺序，一定的策略算法发放武将牌
         // 采用简单的选取第一个（事实上，可以采取许多的策略，例如根据玩家的身份等信息给予不同的好处）
         // 需要注意的是各个玩家拥有的武将数量不同
-
+        
+        
         for(int i=0;i<selectRound;i++) {
             for(String p:players) {
-                for(GeneralDao general:playerOwns.get(p)) {
+                for(General general:playerOwns.get(p)) {
                     if(!choosed.contains(general.getGeneralId())) {
                         generalChoosen.get(p).add(general);
                         choosed.add(general.getGeneralId());
@@ -104,7 +126,7 @@ public class GameInit implements MyService{
                 }
             }
         }
-
+        
 
         JSONObject dataObj = new JSONObject();
         // 在上面的简单选取策略之后，我们向玩家发送已被选出的武将信息
@@ -122,6 +144,12 @@ public class GameInit implements MyService{
         generalChoosen.clear();
     }
 
-
-    
+    public void launchGame(int roomId) {
+        // 最后一步，启动游戏进程
+        ArrayList<Pair<String, Integer>> players = generalChoose.get(roomId);
+        generalChoose.remove(roomId);
+        
+        GameRunner gameRunner = new GameRunner(roomId, players, EditionType.STANDARD);
+        gameRunner.start();
+    }
 }

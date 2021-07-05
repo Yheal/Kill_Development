@@ -10,20 +10,16 @@
                where own_general.account = #{account} 
     </select>
     
-    <!-- 通过id来查询武将 -->
-    <select id="queryGeneralByid" resultType="com.kill_rear.dao.GeneralDao">
-        select generals.general_id,
-               generals.category,
-               generals.name,
-               generals.blood,
-               generals.gimage,
-            from generals
-            where generals.general_id = #{generalId}
+    <select id="queryAllGeneral" resultType="com.kill_rear.dao.GeneralDao">
+        select * from generals
     </select>
 
-    <select id="querySkill" resultType="com.kill_rear.dao.GeneralSkillDao">
-        select general_skill_name,audio
-            from generalskill
+    <select id="queryAllSkill" resultType="com.kill_rear.dao.GeneralSkillDao">
+        select * from generalskill
+    </select>
+
+    <select id="querySkillById" resultType="com.kill_rear.dao.GeneralSkillDao">
+        select * from generalskill 
             where generalskill.general_id = #{generalId}
     </select>
 </mapper>
