@@ -43,9 +43,12 @@ public class GameInit implements MyService{
     // 3、此外，还有一些其他的东西，包括决定玩家的编号的什么的
     
     private static ConcurrentHashMap<Integer, ArrayList<Pair<String, Integer>>> generalChoose = new ConcurrentHashMap<>();
-    
     private static int selectRound = 3;  // 选取武将的次数
 
+    // 实现步骤：
+    // 1、在数据库里面查找给定玩家的所用户的全部武将，为玩家选择出他们拥有的3个武将并给到前端
+    // 2、玩家选择好了之后，我们才可以完全完成上面1、2项
+    // 3、完成后，调用RunTime的launchGame（参数为roomId),开始整个游戏的运转。
 
     @Override
     public void handleMessage(String username, JSONObject dataObj) {
@@ -72,11 +75,6 @@ public class GameInit implements MyService{
 
 
     public void initGame(ArrayList<String> players) {
-       
-        // 实现步骤：
-        // 1、在数据库里面查找给定玩家的所用户的全部武将，为玩家选择出他们拥有的3个武将并给到前端
-        // 2、玩家选择好了之后，我们才可以完全完成上面1、2项
-        // 3、完成后，调用RunTime的launchGame（参数为roomId),开始整个游戏的运转。
         
         ArrayList<Pair<String, Integer>> playerGeneralChoose = new ArrayList<>();  // 玩家选择的武将
         int roomId = roomManager.getNextNumber();        // 获取一个新的房间号
@@ -91,19 +89,17 @@ public class GameInit implements MyService{
         }
         generalChoose.put(roomId, playerGeneralChoose);
         allocateGeneral(roomId, players);
-        
-        /* 上面的步骤，可以在选择完武将后完成 */
-        
     }
 
 
     // 执行分配武将功能，也是游戏初始化的收尾工作
     public void allocateGeneral(int roomId, ArrayList<String> players) {
+
         // 请注意，每人原本分配3张，但是可能玩家拥有的武将数不够，甚至完全没有武将，所以这里分配1张
-        
         HashMap<String, ArrayList<General>> playerOwns = new HashMap<String, ArrayList<General>>();
+        
         // 已选择武将
-        Set<Integer> choosed = new HashSet<>();
+        Set<Integer> choosen = new HashSet<>();
         HashMap<String, ArrayList<General>> generalChoosen = new HashMap<>();
 
         for(String p:players) {
@@ -119,9 +115,9 @@ public class GameInit implements MyService{
         for(int i=0;i<selectRound;i++) {
             for(String p:players) {
                 for(General general:playerOwns.get(p)) {
-                    if(!choosed.contains(general.getGeneralId())) {
+                    if(!choosen.contains(general.getGeneralId())) {
                         generalChoosen.get(p).add(general);
-                        choosed.add(general.getGeneralId());
+                        choosen.add(general.getGeneralId());
                     }
                 }
             }
@@ -140,7 +136,7 @@ public class GameInit implements MyService{
         }
 
         playerOwns.clear();
-        choosed.clear();
+        choosen.clear();
         generalChoosen.clear();
     }
 

@@ -1,7 +1,6 @@
 package com.kill_rear.gamebo.room;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Stack;
@@ -18,7 +17,6 @@ import com.kill_rear.gamebo.game.stage.GameStage;
 import com.kill_rear.gamebo.game.stage.RoundStage;
 import com.kill_rear.service.ajax.GeneralService;
 import com.kill_rear.service.ajax.SkillService;
-import com.kill_rear.skill.CommonSkill;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,22 +34,13 @@ public class RoomDataTwo {
     SkillService skillService;
 
 
-    int roomId;          // 房间号
     GameStage gStage;    // 游戏阶段
     RoundStage rStage;   // 回合阶段
     Queue<Card> cardPile; // 牌组
     Stack<Card> disCard;  // 废牌
                             /* 输入缓存，用于记录玩家的输入，该房间每收到一个选择，控制器会根据类型进行对应的处理*/
                             // ArrayList<Input> inputCache;
-    ArrayList<String> players;    // 玩家账号，我们通过这个账号和玩家通信。注意在身份场，还有一个有关身份数
     OperationPanel[] ops;         // 对玩家操作的抽象
-
-    HashMap<String, CommonSkill> skillHanders;
-
-
-    public int getRoomId() { return roomId; }
-
-    public void setRoomId(int roomId) { this.roomId = roomId; }
 
     public GameStage getgStage() { return gStage; }
 
@@ -69,10 +58,6 @@ public class RoomDataTwo {
 
     public void setDisCard(Stack<Card> disCard) { this.disCard = disCard; }
 
-    public ArrayList<String> getPlayers() { return players; }
-
-    public void setPlayers(ArrayList<String> players) { this.players = players; }
-
     public OperationPanel[] getOps() { return ops; }
 
     public void setOps(OperationPanel[] ops) { this.ops = ops; }
@@ -84,7 +69,6 @@ public class RoomDataTwo {
         rStage = RoundStage.ROUNDPREPARE;
         cardPile = new LinkedList<Card>();
         disCard = new Stack<Card>();
-        skillHanders = new HashMap<String, CommonSkill>();
 
         if(EditionType.STANDARD == ed) {
             initStandard();
@@ -126,14 +110,6 @@ public class RoomDataTwo {
             throw new RunningException("failed to get game data");
         return ops[i];
     }   
-
-    public void sendMessage(int i, String message) throws RunningException{
-        if(i >= ops.length || i < 0)
-            throw new RunningException("failed to get game data");
-        
-    }
-
-
 
 }
 

@@ -4,7 +4,7 @@ import com.kill_rear.common.util.RunningException;
 import com.kill_rear.gamebo.game.operate.Input;
 
 // 依然是一个抽象类
-public abstract class DeadSkill extends CommonSkill{
+public abstract class ChartacterDead extends CommonSkill{
     
     public void readyLaunch(int roomId){
         // nothing

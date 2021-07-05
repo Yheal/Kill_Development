@@ -15,16 +15,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 */
 
 // 单例模式
-public class DeadSkillForTwoMode extends DeadSkill{
+public class ChartacterDeadForTwo extends ChartacterDead{
 
     @Autowired
     RoomManager roomManager;
     
-    private static DeadSkillForTwoMode deadSkill = null;
+    private static ChartacterDeadForTwo deadSkill = null;
 
-    public static DeadSkillForTwoMode getInstance() {
+    public static ChartacterDeadForTwo getInstance() {
         if(deadSkill == null)
-            deadSkill = new DeadSkillForTwoMode();
+            deadSkill = new ChartacterDeadForTwo();
         return deadSkill;
     }
 

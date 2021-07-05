@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 public class SkillService {
     
 
+
     public CommonSkill getCardSkillByName(String name) {
         return null;
     }
@@ -26,7 +27,7 @@ public class SkillService {
         if(EditionType.STANDARD != et) {
             System.out.println("不支持其他版本");
         }
-        
+            
         return null;
     }
 }

@@ -25,4 +25,8 @@ public class Pair<A, B> {
     public String toString(){
         return "(" + first + ", " + second + ")";
     }
+    public void destory() {
+        this.first = null;
+        this.second = null;
+    }
 }
