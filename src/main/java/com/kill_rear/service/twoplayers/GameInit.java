@@ -145,6 +145,6 @@ public class GameInit implements MyService{
         generalChoose.remove(roomId);
         
         GameRunner gameRunner = new GameRunner(roomId, players, EditionType.STANDARD);
-        gameRunner.start();
+        gameRunner.run();
     }
 }

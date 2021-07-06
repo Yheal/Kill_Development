@@ -4,7 +4,7 @@ import java.util.LinkedList;
 
 // 武将数据
 public class General {
-  
+
     int generalId;       // 武将Id
     String category;     // 种族
     String name;         // 名字
@@ -58,6 +58,18 @@ public class General {
         this.blood = blood;
     }
 
+    public LinkedList<String> getSkills() {
+        return skills;
+    }
+    public void setSkills(LinkedList<String> skills) {
+        this.skills = skills;
+    }
+    public LinkedList<String> getAudios() {
+        return audios;
+    }
+    public void setAudios(LinkedList<String> audios) {
+        this.audios = audios;
+    }
 
     public void addSkill(String name, String audio) {
         skills.add(name);
