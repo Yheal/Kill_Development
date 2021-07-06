@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kill_rear.common.util.RunningException;
-import com.kill_rear.gamebo.room.GameRunner;
+import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.service.MyService;
 
 import org.springframework.stereotype.Service;

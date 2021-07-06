@@ -10,7 +10,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.kill_rear.common.util.Pair;
 import com.kill_rear.gamebo.game.edition.EditionType;
 import com.kill_rear.gamebo.game.general.General;
-import com.kill_rear.gamebo.room.GameRunner;
 import com.kill_rear.service.MyService;
 import com.kill_rear.service.ajax.GeneralService;
 import com.kill_rear.service.common.RoomManager;

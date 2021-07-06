@@ -1,13 +1,13 @@
 package com.kill_rear.skill;
 
 import com.kill_rear.gamebo.game.operate.Input;
-import com.kill_rear.gamebo.room.GameRunner;
+import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.gamebo.room.RoomDataTwo;
+
 
 // 通用技能类，所有技能必须继承这个抽象类
 public abstract class CommonSkill {
     
-    private SkillHandleStage handleStage = null;
     private GameRunner gameRunner = null;
     private RoomDataTwo roomData = null;
 

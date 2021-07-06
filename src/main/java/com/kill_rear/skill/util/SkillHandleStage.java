@@ -1,4 +1,4 @@
-package com.kill_rear.skill;
+package com.kill_rear.skill.util;
 
 
 // 技能处理阶段

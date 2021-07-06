@@ -25,7 +25,7 @@ public class OperationPanel {
     /*其他玩家是否被选中状态 */
     public boolean[] playerSelect; 
     
-    /*手牌是否被选中状态 */
+    /*手牌以及是否被选中状态 */
     public ArrayList<Card> handCards;
 
     /*装备区 */
