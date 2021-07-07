@@ -9,12 +9,12 @@ import java.util.Stack;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kill_rear.common.util.Pair;
+import com.kill_rear.gamebo.game.SkillRunTime;
 import com.kill_rear.gamebo.game.card.Card;
 import com.kill_rear.gamebo.game.edition.CardSet;
 import com.kill_rear.gamebo.game.edition.EditionType;
 import com.kill_rear.gamebo.game.edition.Standard;
 import com.kill_rear.gamebo.game.general.General;
-import com.kill_rear.gamebo.game.operate.Input;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.gamebo.game.stage.GameStage;
 import com.kill_rear.gamebo.game.stage.RoundStage;
@@ -23,7 +23,6 @@ import com.kill_rear.service.ajax.GeneralService;
 import com.kill_rear.service.ajax.SkillService;
 import com.kill_rear.service.common.SessionPools;
 import com.kill_rear.skill.CommonSkill;
-import com.kill_rear.skill.util.SkillHandleStage;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,20 +45,23 @@ public class GameRunner implements MyService {
     ArrayList<String> playersName;
 
     /* 游戏数据 */
-    private int roomId;
-    private GameStage gStage;              // 游戏阶段
-    private RoundStage rStage;             // 回合阶段
-    private Queue<Card> cardPile;          // 牌组
-    private Stack<Card> disCard;           // 废牌
-    private OperationPanel[] ops;          // 玩家操作的数据结构
-
-    /* 技能处理 */
+    public int roomId;
+    public GameStage gStage;              // 游戏阶段
+    public RoundStage rStage;             // 回合阶段
+    public boolean[] roundStageAvailable;
+    public Queue<Card> cardPile;          // 牌组
+    public Stack<Card> disCard;           // 废牌
+    public OperationPanel[] ops;          // 玩家操作的数据结构
+    public int curPlayer;
+    
+    /* 游戏控制 */
     private HashMap<String, CommonSkill> skills = null;                  // 技能和技能逻辑处理类的映射
-    private Stack<CommonSkill> skillStack;                               // 技能栈
-    private Stack<ArrayList<Input>> skillHandleStack;                    // 技能处理阶段，用户的输入，可能不需要！填到用户的OperaionPanel板
-    private Stack<SkillHandleStage> skillStageStack;                     // 技能处理阶段
+    public Stack<SkillRunTime> skillRunTimeStack;
                                                                          // 三个栈的大小应该相同
-
+    
+    /* 游戏同步 */
+    private int[] isOk;
+    
     public int getRoomId() { return roomId; }
 
     public void setRoomId(int roomId) { this.roomId = roomId; }
@@ -100,9 +102,8 @@ public class GameRunner implements MyService {
             playersName.add(players.get(i).getFirst());
         }
 
-        skillStack = new Stack<>();
-        skillHandleStack = new Stack<>();
-        skillStageStack = new Stack<>();
+        skillRunTimeStack = new Stack<>();
+        isOk = new int[playerAmounts];
     }
 
     public ArrayList<Card> initStandard() {
@@ -123,22 +124,34 @@ public class GameRunner implements MyService {
     @Override
     public void handleMessage(String username, JSONObject dataObj) {
         // 处理玩家的输入操作
+        String stage = dataObj.getString("stage");
+        switch(stage){
+            case "start":
+
+            case "loop":
+            
+            case "end":
+
+        }
+    }
+    
+    /* 与游戏相关的逻辑函数，按字典序排序 */
+    
+    public void broadcast(JSONObject json) {
+        for(String s: playersName) 
+            sessionPools.sendMessage(s, json);
     }
 
-    // 与游戏相关的核心逻辑函数
-    public void run() {
-        // 分发四张牌，从1号玩家开始
-        switch(gStage) {
-            case GAMESTART:
-                gameStart();
-                break;
-            case GAMELOOP:
-                gameLoop();
-                break;
-            case GAMEEND:
-                gameEnd();
-                break;
+    public void characterDead(int playerNumber) {
+        // 角色死亡处理逻辑
+    } 
+    private boolean checkOKAll() {
+        boolean res = true;
+        for(int ok:isOk) {
+            if(ok == 0)
+                res = false;
         }
+        return res;
     }
     
     private void gameStart() {
@@ -157,6 +170,8 @@ public class GameRunner implements MyService {
             dataObj.put("data", getPlayerVisibleData(i));
             sessionPools.sendMessage(playersName.get(i), dataObj);
         }
+        curPlayer = 0;
+        rStage = RoundStage.ROUNDPREPARE;
     }
 
     private void gameLoop() {
@@ -165,19 +180,6 @@ public class GameRunner implements MyService {
 
     private void gameEnd() {
 
-    }
-
-    public JSONObject getPlayerVisibleData(int i) {
-        return null;
-    }
-
-    public void shuffleCard(ArrayList<Card> cards) {
-        cardPile.clear();
-        Collections.shuffle(cards);
-        while(cards.isEmpty() == false) {
-            Card card = cards.remove(0);
-            cardPile.add(card);
-        }
     }
 
     public Card getOneCardFromCardPile() {
@@ -191,10 +193,44 @@ public class GameRunner implements MyService {
         return cardPile.poll();
     }   
 
-    /* 玩家可见的技能区 */
-    public void characterDead(int playerNumber) {
-        // 角色死亡处理逻辑
+    public JSONObject getPlayerVisibleData(int i) {
+        return null;
     }
 
+    public void run() {
+        // 分发四张牌，从1号玩家开始
+        switch(gStage) {
+            case GAMESTART:
+                gameStart();
+                break;
+            case GAMELOOP:
+                gameLoop();
+                break;
+            case GAMEEND:
+                gameEnd();
+                break;
+        }
+    }
+    
+    private void setNotOkAll(){
+        for(int i=0;i<isOk.length;i++) 
+            isOk[i] = 0;
+    }
+
+    public void shuffleCard(ArrayList<Card> cards) {
+        cardPile.clear();
+        Collections.shuffle(cards);
+        while(cards.isEmpty() == false) {
+            Card card = cards.remove(0);
+            cardPile.add(card);
+        }
+    }
+
+    public void launchNewSkill(String name) {
+        
+    }
+    public void launchNewSkillRunTime(SkillRunTime skillRunTime) {
+        skillRunTimeStack.add(skillRunTime);
+    }
 
 }
