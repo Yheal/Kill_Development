@@ -2,6 +2,8 @@ package com.kill_rear.skill.round;
 
 import java.util.ArrayList;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.kill_rear.gamebo.game.SkillRunTime;
 import com.kill_rear.gamebo.game.card.Card;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
@@ -13,7 +15,7 @@ public class RoundGetcard extends CommonSkill{
     
     private static SkillHandleResult result;
     private static String name = "Game";
-    private static String animation = "getCard";
+    private static String action = "getCard";
     
 
     public static SkillHandleResult skillResult() { 
@@ -40,6 +42,10 @@ public class RoundGetcard extends CommonSkill{
         }
         
         /* 向玩家发送数据 */
+        JSONObject dataObj = new JSONObject();
+        dataObj.put("action", action);
+        dataObj.put("user", gameRunner.curPlayer);
+        dataObj.put("data", gets);
         
     }
 }

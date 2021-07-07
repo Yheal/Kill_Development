@@ -61,7 +61,8 @@ public class GameRunner implements MyService {
     
     /* 游戏同步 */
     private int[] isOk;
-    
+    private JSONObject dataUpdate;
+
     public int getRoomId() { return roomId; }
 
     public void setRoomId(int roomId) { this.roomId = roomId; }
@@ -104,6 +105,9 @@ public class GameRunner implements MyService {
 
         skillRunTimeStack = new Stack<>();
         isOk = new int[playerAmounts];
+        dataUpdate = new JSONObject();
+        dataUpdate.put("api", "play");
+        dataUpdate.put("stage", "update");
     }
 
     public ArrayList<Card> initStandard() {
@@ -137,9 +141,12 @@ public class GameRunner implements MyService {
     
     /* 与游戏相关的逻辑函数，按字典序排序 */
     
-    public void broadcast(JSONObject json) {
+    public void broadcast(JSONObject data) {
+
+        dataUpdate.put("data", data);
         for(String s: playersName) 
-            sessionPools.sendMessage(s, json);
+            sessionPools.sendMessage(s, dataUpdate);
+        
     }
 
     public void characterDead(int playerNumber) {
@@ -164,7 +171,7 @@ public class GameRunner implements MyService {
         }
         // 向玩家发送游戏数据
         JSONObject dataObj = new JSONObject();
-        dataObj.put("api", "game-play");
+        dataObj.put("api", "play");
         dataObj.put("stage", "start");
         for(int i=0;i<ops.length;i++) {
             dataObj.put("data", getPlayerVisibleData(i));
