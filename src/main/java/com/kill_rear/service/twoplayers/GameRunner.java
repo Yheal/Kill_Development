@@ -17,7 +17,6 @@ import com.kill_rear.gamebo.game.edition.Standard;
 import com.kill_rear.gamebo.game.general.General;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.gamebo.game.stage.GameStage;
-import com.kill_rear.gamebo.game.stage.RoundStage;
 import com.kill_rear.service.MyService;
 import com.kill_rear.service.ajax.GeneralService;
 import com.kill_rear.service.ajax.SkillService;
@@ -42,12 +41,11 @@ public class GameRunner implements MyService {
     SessionPools sessionPools; //会话
 
     /* 玩家账号 */
-    ArrayList<String> playersName;
+    public ArrayList<String> playersName;
 
     /* 游戏数据 */
     public int roomId;
     public GameStage gStage;              // 游戏阶段
-    public RoundStage rStage;             // 回合阶段
     public boolean[] roundStageAvailable;
     public Queue<Card> cardPile;          // 牌组
     public Stack<Card> disCard;           // 废牌
@@ -60,7 +58,7 @@ public class GameRunner implements MyService {
                                                                          // 三个栈的大小应该相同
     
     /* 游戏同步 */
-    private int[] isOk;
+    private int[] synchornization;
     private JSONObject dataUpdate;
 
     public int getRoomId() { return roomId; }
@@ -72,7 +70,6 @@ public class GameRunner implements MyService {
         this.roomId = Id;
         
         gStage = GameStage.GAMESTART;       // 游戏阶段
-        rStage = RoundStage.ROUNDPREPARE;   // 回合阶段
         cardPile = new LinkedList<Card>();  // 牌堆
         disCard = new Stack<Card>();        // 废牌堆
 
@@ -104,7 +101,7 @@ public class GameRunner implements MyService {
         }
 
         skillRunTimeStack = new Stack<>();
-        isOk = new int[playerAmounts];
+        synchornization = new int[playerAmounts];
         dataUpdate = new JSONObject();
         dataUpdate.put("api", "play");
         dataUpdate.put("stage", "update");
@@ -141,20 +138,29 @@ public class GameRunner implements MyService {
     
     /* 与游戏相关的逻辑函数，按字典序排序 */
     
-    public void broadcast(JSONObject data) {
+    public void broadcast(SkillRunTime skillRunTime ,JSONObject dataObj) {
 
-        dataUpdate.put("data", data);
+        setAllSynchronization();
+
+        dataUpdate.put("action", skillRunTime.skill.getName());
+        dataUpdate.put("source", skillRunTime.source);
+        dataUpdate.put("target", skillRunTime.target);
+        dataUpdate.put("data", dataObj);  
+        
         for(String s: playersName) 
             sessionPools.sendMessage(s, dataUpdate);
-        
+       
+        // 释放引用
+        dataUpdate.put("data", null);
     }
 
     public void characterDead(int playerNumber) {
         // 角色死亡处理逻辑
     } 
+
     private boolean checkOKAll() {
         boolean res = true;
-        for(int ok:isOk) {
+        for(int ok:synchornization) {
             if(ok == 0)
                 res = false;
         }
@@ -178,7 +184,6 @@ public class GameRunner implements MyService {
             sessionPools.sendMessage(playersName.get(i), dataObj);
         }
         curPlayer = 0;
-        rStage = RoundStage.ROUNDPREPARE;
     }
 
     private void gameLoop() {
@@ -219,9 +224,15 @@ public class GameRunner implements MyService {
         }
     }
     
+
+    // 启用同步
+    private void setAllSynchronization() {
+
+    }
+
     private void setNotOkAll(){
-        for(int i=0;i<isOk.length;i++) 
-            isOk[i] = 0;
+        for(int i=0;i<synchornization.length;i++) 
+            synchornization[i] = 0;
     }
 
     public void shuffleCard(ArrayList<Card> cards) {
@@ -233,11 +244,37 @@ public class GameRunner implements MyService {
         }
     }
 
-    public void launchNewSkill(String name) {
+    // 向一名玩家发送指定的数据，而其余玩家接受不同的数据
+    public void sendSeparateData(int p1, JSONObject data1, JSONObject data2, SkillRunTime skillRunTime) {
+        
+        setAllSynchronization();
+
+        dataUpdate.put("action", skillRunTime.skill.getName());
+        dataUpdate.put("source", skillRunTime.source);
+        dataUpdate.put("target", skillRunTime.target);
+        dataUpdate.put("data", data1);
+        sessionPools.sendMessage(playersName.get(p1), dataUpdate);
+        dataUpdate.put("data", data2);
+        for(int i=0;i < playersName.size();i++) {
+            if(i != p1) 
+                sessionPools.sendMessage(playersName.get(i), dataUpdate);
+        }
+        dataUpdate.remove("data");
+
+    }
+    public void sendSingleMessage(int i, SkillRunTime skill, JSONObject data) {
+        dataUpdate.put("data", data);
+        sessionPools.sendMessage(playersName.get(i), data);
+        dataUpdate.remove("data");
+    }
+
+    public void launchNewSkill(String name, int Initiator, int Actor) {
         
     }
+
     public void launchNewSkillRunTime(SkillRunTime skillRunTime) {
         skillRunTimeStack.add(skillRunTime);
     }
+
 
 }

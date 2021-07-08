@@ -2,14 +2,15 @@ package com.kill_rear.skill.util;
 
 
 // 技能处理阶段
-public class SkillHandleState {
+public class SkillHandleStage {
 
     // 0是BEFOREEFFECT
     // 1是INEFFECT
-    // 2是AFTEREFFECT
+    // 2是WAITRECIEVE
+    // 3是AFTEREFFECT
     private int tag;
     
-    public SkillHandleState() {
+    public SkillHandleStage() {
         tag = 0;              
     }
     public void reset() {tag = 0;}
@@ -21,5 +22,6 @@ public class SkillHandleState {
     public boolean isBeforeEffectState() { return tag == 0; }
     public boolean isInEffectState() {return tag == 1;}
     public boolean isAfterEffectState() {return tag == 2;}
-    
+
+    public int getTag() { return tag;}
 }
