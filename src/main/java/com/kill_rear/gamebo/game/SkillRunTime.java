@@ -8,13 +8,13 @@ import com.kill_rear.skill.util.SkillHandleStage;
 
 public class SkillRunTime {
     
-    public CommonSkill skill;
-    public ArrayList<Input> inputStorage;
-    public SkillHandleStage skillHandleStage;
-
-    public String result;
-    public int source;
-    public ArrayList<Integer> target;
+    public CommonSkill skill;                 // 指向技能
+    public ArrayList<Input> inputStorage;     // 保存输入
+    public SkillHandleStage skillHandleStage; //技能处理状态
+    public int[] shield;                      // 状态是否屏蔽
+    public String result;                     // 结果
+    public int source;                        // 触发源
+    public ArrayList<Integer> target;         // 目标对象 
 
 }
 

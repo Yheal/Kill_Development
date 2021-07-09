@@ -8,6 +8,7 @@ import com.kill_rear.gamebo.game.card.Card;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.skill.CommonSkill;
+import com.kill_rear.skill.util.SkillType;
 
 
 public class RoundGetcard extends CommonSkill{
@@ -17,11 +18,11 @@ public class RoundGetcard extends CommonSkill{
     public String getEffect() { return effect;}
 
     public RoundGetcard(GameRunner runner) {
-        super("RoundGetcard", runner);
+        super("RoundGetcard", SkillType.CONTORLL, runner);
     }
     
     @Override
-    public void inEffect(SkillRunTime myself) {
+    public void beforeEffect(SkillRunTime myself) {
         OperationPanel cur = runner.ops[runner.curPlayer];
         ArrayList<Card> gets = new ArrayList<>();
         int n = 2;
@@ -37,9 +38,8 @@ public class RoundGetcard extends CommonSkill{
         JSONObject data2 = new JSONObject();
         data2.put("data", 2);
 
-        myself.skillHandleStage.setAfterEffectState();
+        myself.skillHandleStage.setAfterEffectState(); // 摸牌不需要接受其他技能
         runner.sendSeparateData(myself.source, data1, data2, myself);
-        
     }
 
 }

@@ -17,6 +17,9 @@ public class GeneralService {
     
     @Autowired
     GeneralMapper generalMapper;
+    
+    @Autowired
+    SkillService skillService;
 
     private static int maxGenerals = 1000;
     private static List<General> generalsCache = new ArrayList<>(maxGenerals);
@@ -30,14 +33,14 @@ public class GeneralService {
             General general = new General();
             for(GeneralSkillDao skill:skills) {
                 if(genDao.getGeneralId() == skill.getGeneralId()) {
-                    general.addSkill(skill.getName(), skill.getAudio());
+                    general.addSkill(skillService.getGeneralSkillByname(skill.getName()), skill.getAudio());
                 }
             }
-            general.setBlood(genDao.getBlood());
-            general.setCategory(genDao.getCategory());
-            general.setGeneralId(genDao.getGeneralId());
-            general.setGimage(genDao.getgImage());
-            general.setName(genDao.getName());
+            general.blood = genDao.getBlood();
+            general.category = genDao.getCategory();
+            general.generalId = genDao.getGeneralId();
+            general.gimage = genDao.getgImage();
+            general.name = genDao.getName();
             generalsCache.set(genDao.getGeneralId(), general);
         }
     }

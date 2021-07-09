@@ -72,6 +72,7 @@ public class GameRunner implements MyService {
         gStage = GameStage.GAMESTART;       // 游戏阶段
         cardPile = new LinkedList<Card>();  // 牌堆
         disCard = new Stack<Card>();        // 废牌堆
+        this.skills = new HashMap<>();
 
         ArrayList<Card> cards;              
         if(EditionType.STANDARD == ed) {
@@ -82,21 +83,19 @@ public class GameRunner implements MyService {
         }
         shuffleCard(cards);                // 洗牌
         
-        this.skills = skillService.getSkillByEdition(ed);   // 卡牌所有技能
-
         int playerAmounts = players.size();
         ops = new OperationPanel[playerAmounts];  // 玩家操作
         playersName = new ArrayList<>();
 
         for(int i = 0; i < playerAmounts;i++) {
             General gen = generalService.queryGeneralById(players.get(i).getSecond());
-            ops[i] = new OperationPanel(playerAmounts, gen.getBlood(), gen);
+            ops[i] = new OperationPanel(playerAmounts, gen.blood, gen);
             
             for(int j=0;j<playerAmounts;j++) 
                 ops[i].playerSelect[j] = false;
 
-            for(String name:gen.getSkills()) 
-                this.skills.put(name, skillService.getGeneralSkillByname(name));
+            for(CommonSkill skill:gen.skills) 
+                this.skills.put(skill.getName(), skill);
             playersName.add(players.get(i).getFirst());
         }
 
@@ -114,8 +113,8 @@ public class GameRunner implements MyService {
         for(int i=0; i<standardEdition.cardSets.length ;i++) {
             CardSet cardSet = standardEdition.cardSets[i];
             for(int j = 0; j < cardSet.card_colors.length;j++) {
-                cards.add(new Card(index, cardSet.card_colors[j], cardSet.card_points[j], cardSet.name));
-                // 加载全部类
+                // cards.add(new Card(index, cardSet.card_colors[j], cardSet.card_points[j], cardSet.name));
+                // 加载卡片，并设置技能的引用
                 index++;
             }
         }
@@ -138,6 +137,23 @@ public class GameRunner implements MyService {
     
     /* 与游戏相关的逻辑函数，按字典序排序 */
     
+    
+    public void broadcast(SkillRunTime skillRunTime ,String dataObj) {
+
+        setAllSynchronization();
+
+        dataUpdate.put("action", skillRunTime.skill.getName());
+        dataUpdate.put("source", skillRunTime.source);
+        dataUpdate.put("target", skillRunTime.target);
+        dataUpdate.put("data", dataObj);  
+        
+        for(String s: playersName) 
+            sessionPools.sendMessage(s, dataUpdate);
+       
+        // 释放引用
+        dataUpdate.put("data", null);
+    }
+
     public void broadcast(SkillRunTime skillRunTime ,JSONObject dataObj) {
 
         setAllSynchronization();

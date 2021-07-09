@@ -114,9 +114,9 @@ public class GameInit implements MyService{
         for(int i=0;i<selectRound;i++) {
             for(String p:players) {
                 for(General general:playerOwns.get(p)) {
-                    if(!choosen.contains(general.getGeneralId())) {
+                    if(!choosen.contains(general.generalId)) {
                         generalChoosen.get(p).add(general);
-                        choosen.add(general.getGeneralId());
+                        choosen.add(general.generalId);
                     }
                 }
             }
