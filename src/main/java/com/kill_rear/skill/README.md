@@ -19,6 +19,29 @@ accept       -- 接受前一技能的结果
 M每次处理的时候，都会检查是否需要等待用户，如果不需要按照上面的流程走。
 否则，停止执行，等待下次的用户输入。
 
+// 未完成的类，RoundJudge、RoundAction、RoundDisCard、RoundEnd、OperationPanel
+
+后 -> 前
+start阶段
+{
+    api: play
+    stage: start
+    action: 'start'
+    generals: general
+    owns:
+}
+{
+    api: play
+    pattern: two
+    stage: start
+    message: ""
+}
+update阶段
+{
+    api: play
+    stage: update
+    看后面
+}
 round（回合）
 {
     action: 'Round'

@@ -4,12 +4,12 @@ import java.util.List;
 
 
 import com.kill_rear.common.util.RunningException;
-import com.kill_rear.gamebo.game.SkillRunTime;
 import com.kill_rear.gamebo.game.card.Card;
 import com.kill_rear.gamebo.game.operate.Input;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.skill.CommonSkill;
+import com.kill_rear.skill.SkillRunTime;
 import com.kill_rear.skill.util.SkillType;
 
 // 核心类之一
@@ -21,22 +21,48 @@ public class RoundAction extends CommonSkill {
     private Card equipmentCard = null;
 
     public RoundAction(String name, GameRunner runner) { 
-        super("RoundAction", SkillType.CONTORLL, runner);
-        init();
+        super(runner);
     }
     
     @Override
-    public void acceptResult(SkillRunTime myself, SkillRunTime previous) {
-        myself.skillHandleStage.setBeforeEffectState();
+    public boolean acceptResult(SkillRunTime myself, SkillRunTime previous) {
+        myself.skillHandleStage.setLaunchState();
+        return false;
+    }
+
+    
+    @Override
+    public void destory() {
+        generalSkillPrepareToLaunch = null;
+        handCardPrepareToThrow = null;
+        equipmentCard = null;        
     }
 
     @Override
-    public void beforeEffect(SkillRunTime myself) {
-        // 设置当前玩家所有可操作对象
-        setGameObjSelectable(myself.source);        
-        myself.skillHandleStage.setInEffectState();
+    public String getName() { return "RoundAction";}
 
+    @Override
+    public SkillType getSkillType() { return SkillType.CONTORLL;}
+
+    @Override
+    public CommonSkill init() {
+        generalSkillPrepareToLaunch = null;
+        handCardPrepareToThrow = null;
+        equipmentCard = null;
+
+        return this;
     }
+
+    @Override
+    public boolean isNeedCheck() {     // TODO Auto-generated method stub
+        return false;
+    }
+
+    public boolean isExitPreparingSkill() {
+        return !(this.generalSkillPrepareToLaunch == null && this.handCardPrepareToThrow == null
+                    && this.equipmentCard == null);
+    }
+
     /*
         PLAYER(0),
     GENERALSKILL(1),
@@ -48,15 +74,15 @@ public class RoundAction extends CommonSkill {
      */
 
     @Override
-    public void inEffect(SkillRunTime myself, Input input) throws RunningException {
+    public void acceptInput(SkillRunTime myself, Input input) throws RunningException {
         
-        OperationPanel op = runner.ops[myself.source];
+        OperationPanel op = runner.ops[myself.sender];
         
         // input好像没有什么用，先留着
 
         switch(input.type.name()) {
             case "PLAYER":
-                letSkillSetGameObjSelectable(myself.source);
+                letSkillSetGameObjSelectable(myself.sender);
                 break;
 
             case "GENERALSKILL":
@@ -68,7 +94,7 @@ public class RoundAction extends CommonSkill {
                 }
                 if(this.generalSkillPrepareToLaunch == null)
                     throw(new RunningException("找不到技能引用"));
-                letSkillSetGameObjSelectable(myself.source);
+                letSkillSetGameObjSelectable(myself.sender);
                 break;
 
             case "HANDCARD":
@@ -86,7 +112,7 @@ public class RoundAction extends CommonSkill {
                 } else {
                     // 与其他技能有关, 设置该目标已经被选择。
                 } 
-                letSkillSetGameObjSelectable(myself.source);
+                letSkillSetGameObjSelectable(myself.sender);
                 break;
 
             case "EQUIPMENT":
@@ -101,7 +127,7 @@ public class RoundAction extends CommonSkill {
                 }
                 if(this.equipmentCard == null)
                     throw(new RunningException("找不到技能的引用"));
-                letSkillSetGameObjSelectable(myself.source);
+                letSkillSetGameObjSelectable(myself.sender);
                 break;
 
             case "CARD":
@@ -117,7 +143,7 @@ public class RoundAction extends CommonSkill {
                         break;
                     case "cancel":
                         // 取消准备启动技能过程, 重新设置可以使用的对象
-                        beforeEffect(myself); 
+                        launchMySelf(myself); 
                         break; 
                     case "end":
                         // 结束回合
@@ -134,19 +160,6 @@ public class RoundAction extends CommonSkill {
         myself.inputStorage.add(input);     // 这个是通用的操作
     }
     
-
-    @Override
-    public void init() {
-        generalSkillPrepareToLaunch = null;
-        handCardPrepareToThrow = null;
-        equipmentCard = null;
-    }
-
-    public boolean isExitPreparingSkill() {
-        return !(this.generalSkillPrepareToLaunch == null && this.handCardPrepareToThrow == null
-                    && this.equipmentCard == null);
-    }
-
     private void letSkillSetGameObjSelectable(int target) throws RunningException {
 
         if(generalSkillPrepareToLaunch != null) {
@@ -170,6 +183,16 @@ public class RoundAction extends CommonSkill {
             throw new RunningException("找不到技能引用");
         }
     }
+
+    @Override
+    public void launchMySelf(SkillRunTime myself) {
+         // 设置当前玩家所有可操作对象
+         setGameObjSelectable(myself.sender);        
+         myself.skillHandleStage.setLaunchState();      
+    }
+
+    @Override
+    public boolean modifyActivatedSkill(SkillRunTime skillRunTime) { return false;}
 
     public void setGameObjSelectable(int target){
         // 没有启动技能前，禁止选中其他玩家aaa
@@ -219,5 +242,7 @@ public class RoundAction extends CommonSkill {
 
         op.buttons[2].hide = true;
     }
+
+
 
 }

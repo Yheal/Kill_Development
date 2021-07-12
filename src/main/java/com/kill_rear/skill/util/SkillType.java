@@ -12,4 +12,5 @@ public enum SkillType {
     SkillType(int tag) {
         this.tag = tag;
     }
+    public int getTag() {return tag;}
 }

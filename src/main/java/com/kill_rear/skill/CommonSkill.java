@@ -1,7 +1,6 @@
 package com.kill_rear.skill;
 
 import com.kill_rear.common.util.RunningException;
-import com.kill_rear.gamebo.game.SkillRunTime;
 import com.kill_rear.gamebo.game.operate.Input;
 import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.skill.util.SkillType;
@@ -12,36 +11,30 @@ import com.kill_rear.skill.util.SkillType;
 public abstract class CommonSkill {
     
     public GameRunner runner = null;
-    private String name;
-    private SkillType skillType;
 
-    public CommonSkill(String name, SkillType skillType, GameRunner runner) {
-        this.name = name;
+
+    public CommonSkill(GameRunner runner) {
         this.runner = runner;
-        this.skillType = skillType;
     }
 
-    public String getName() {
-        return name;
-    }
+    // 接受输入
+    public void acceptInput(SkillRunTime myself,Input input) throws RunningException {}
 
-    public SkillType getSkillType() {
-        return skillType;
-    }
+    // -接受输入之后
+    public void afterEffect(SkillRunTime myself) { myself.result = "ok"; }
 
-    public void beforeEffect(SkillRunTime myself) {}
-
-    // 处理前一个技能的效果
-    public void inEffect(SkillRunTime myself,Input input) throws RunningException {}
-
-    public void afterEffect(SkillRunTime myself) {
-        myself.result = "ok";
-    }
+    // 设置前端可以被响应的对象
     public void setGameObjSelectable(int target){}
 
-    public void acceptResult(SkillRunTime myself ,SkillRunTime previous){}
-    
-    public void init() {
+    public CommonSkill init(){ return this; }
 
-    }
+    public boolean isActivatable(SkillRunTime skillRunTime) { return false; }
+
+    public abstract void launchMySelf(SkillRunTime myself) throws RunningException;
+    public abstract void destory();
+    public abstract String getName();
+    public abstract boolean isNeedCheck();
+    public abstract SkillType getSkillType();
+    public abstract boolean acceptResult(SkillRunTime myself ,SkillRunTime previous);
+    public abstract boolean modifyActivatedSkill(SkillRunTime skillRunTime);
 }

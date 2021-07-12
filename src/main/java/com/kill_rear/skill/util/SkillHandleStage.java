@@ -16,15 +16,13 @@ public class SkillHandleStage {
     }
     public void reset() {tag = 0;}
 
-    public void setBeforeEffectState() { tag = 0; }
-    public void setInEffectState() {tag = 1;}
-    public void setAfterEffectState() {tag = 2;}
-    public void setAcceptState() {tag = 3;}
+    public void setLaunchState() { tag = 0; }
+    public void setAfterEffectState() {tag = 1;}
+    public void setAcceptState() {tag = 2;}
 
-    public boolean isBeforeEffectState() { return tag == 0; }
-    public boolean isInEffectState() {return tag == 1;}
+    public boolean isLaunchEffectState() { return tag == 0; }
     public boolean isAfterEffectState() {return tag == 2;}
-    public boolean isAcceptState() {return tag == 3;}
+    public boolean isAcceptState() {return tag == 1;}
 
     public int getTag() { return tag;}
 }

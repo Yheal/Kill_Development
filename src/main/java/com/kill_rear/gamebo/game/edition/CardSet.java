@@ -5,6 +5,6 @@ import com.kill_rear.gamebo.game.card.CardColor;
 // 卡牌集合类
 public class CardSet {
     public String name;
-    public String[] card_points;
-    public CardColor[] card_colors;
+    public String[] cardPoints;
+    public CardColor[] cardColors;
 }

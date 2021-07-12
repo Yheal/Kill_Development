@@ -3,11 +3,11 @@ package com.kill_rear.skill.round;
 import java.util.ArrayList;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kill_rear.gamebo.game.SkillRunTime;
 import com.kill_rear.gamebo.game.card.Card;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.skill.CommonSkill;
+import com.kill_rear.skill.SkillRunTime;
 import com.kill_rear.skill.util.SkillType;
 
 
@@ -17,12 +17,25 @@ public class RoundGetcard extends CommonSkill{
         
     public String getEffect() { return effect;}
 
-    public RoundGetcard(GameRunner runner) {
-        super("RoundGetcard", SkillType.CONTORLL, runner);
-    }
+    public RoundGetcard(GameRunner runner) { super(runner); }
+    
     
     @Override
-    public void beforeEffect(SkillRunTime myself) {
+    public void destory() {
+        runner = null;        
+    }
+
+    @Override
+    public String getName() { return "RoundGetCard"; }
+
+    @Override
+    public SkillType getSkillType() { return SkillType.CONTORLL;}
+
+    @Override
+    public boolean isNeedCheck() { return true; }
+
+    @Override
+    public void launchMySelf(SkillRunTime myself) { 
         OperationPanel cur = runner.ops[runner.curPlayer];
         ArrayList<Card> gets = new ArrayList<>();
         int n = 2;
@@ -39,7 +52,15 @@ public class RoundGetcard extends CommonSkill{
         data2.put("data", 2);
 
         myself.skillHandleStage.setAfterEffectState(); // 摸牌不需要接受其他技能
-        runner.sendSeparateData(myself.source, data1, data2, myself);
+        runner.sendSeparateData(myself.sender, data1, data2, myself);
     }
+
+    @Override
+    public boolean acceptResult(SkillRunTime myself, SkillRunTime previous) {
+        return false;
+    }
+
+    @Override
+    public boolean modifyActivatedSkill(SkillRunTime skillRunTime) { return false;}
 
 }

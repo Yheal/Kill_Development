@@ -3,10 +3,10 @@ package com.kill_rear.gamebo.game.operate;
 import java.util.ArrayList;
 import java.util.Stack;
 
-import com.kill_rear.gamebo.game.SkillRunTime;
 import com.kill_rear.gamebo.game.card.Card;
 import com.kill_rear.gamebo.game.general.General;
 import com.kill_rear.gamebo.game.stage.PlayerState;
+import com.kill_rear.skill.util.SkillDelayRun;
 
 // 操作类，每个玩家一个
 public class OperationPanel {
@@ -31,7 +31,8 @@ public class OperationPanel {
     public Card[] equipment;
 
     /* 判定区 */
-    public Stack<SkillRunTime> judge;
+    public Stack<SkillDelayRun> judge;
+
 
     public Button[] buttons;
 

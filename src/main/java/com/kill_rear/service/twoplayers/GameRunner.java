@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kill_rear.common.util.Pair;
-import com.kill_rear.gamebo.game.SkillRunTime;
+import com.kill_rear.common.util.RunningException;
 import com.kill_rear.gamebo.game.card.Card;
 import com.kill_rear.gamebo.game.edition.CardSet;
 import com.kill_rear.gamebo.game.edition.EditionType;
@@ -22,6 +23,9 @@ import com.kill_rear.service.ajax.GeneralService;
 import com.kill_rear.service.ajax.SkillService;
 import com.kill_rear.service.common.SessionPools;
 import com.kill_rear.skill.CommonSkill;
+import com.kill_rear.skill.SkillRunTime;
+import com.kill_rear.skill.round.Round;
+import com.kill_rear.skill.util.SkillHandleStack;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,8 +57,9 @@ public class GameRunner implements MyService {
     public int curPlayer;
     
     /* 游戏控制 */
+    public SkillHandleStack skillHandleStack;
     private HashMap<String, CommonSkill> skills = null;                  // 技能和技能逻辑处理类的映射
-    public Stack<SkillRunTime> skillRunTimeStack;
+    
                                                                          // 三个栈的大小应该相同
     
     /* 游戏同步 */
@@ -99,52 +104,20 @@ public class GameRunner implements MyService {
             playersName.add(players.get(i).getFirst());
         }
 
-        skillRunTimeStack = new Stack<>();
+        skillHandleStack = new SkillHandleStack();
         synchornization = new int[playerAmounts];
         dataUpdate = new JSONObject();
         dataUpdate.put("api", "play");
-        dataUpdate.put("stage", "update");
+        dataUpdate.put("stage", "start");
     }
 
-    public ArrayList<Card> initStandard() {
-        // 初始化牌组, 遍历对象Standard的CardSet集合
-        ArrayList<Card> cards = new ArrayList<>();
-        int index  = 0;
-        for(int i=0; i<standardEdition.cardSets.length ;i++) {
-            CardSet cardSet = standardEdition.cardSets[i];
-            for(int j = 0; j < cardSet.card_colors.length;j++) {
-                // cards.add(new Card(index, cardSet.card_colors[j], cardSet.card_points[j], cardSet.name));
-                // 加载卡片，并设置技能的引用
-                index++;
-            }
-        }
-        return cards;
-    }
-
-    @Override
-    public void handleMessage(String username, JSONObject dataObj) {
-        // 处理玩家的输入操作
-        String stage = dataObj.getString("stage");
-        switch(stage){
-            case "start":
-
-            case "loop":
-            
-            case "end":
-
-        }
-    }
-    
-    /* 与游戏相关的逻辑函数，按字典序排序 */
-    
-    
     public void broadcast(SkillRunTime skillRunTime ,String dataObj) {
 
         setAllSynchronization();
 
         dataUpdate.put("action", skillRunTime.skill.getName());
-        dataUpdate.put("source", skillRunTime.source);
-        dataUpdate.put("target", skillRunTime.target);
+        dataUpdate.put("sender", skillRunTime.sender);
+        dataUpdate.put("accepter", skillRunTime.accepters);
         dataUpdate.put("data", dataObj);  
         
         for(String s: playersName) 
@@ -159,8 +132,8 @@ public class GameRunner implements MyService {
         setAllSynchronization();
 
         dataUpdate.put("action", skillRunTime.skill.getName());
-        dataUpdate.put("source", skillRunTime.source);
-        dataUpdate.put("target", skillRunTime.target);
+        dataUpdate.put("source", skillRunTime.sender);
+        dataUpdate.put("receivers", skillRunTime.accepters);
         dataUpdate.put("data", dataObj);  
         
         for(String s: playersName) 
@@ -174,7 +147,7 @@ public class GameRunner implements MyService {
         // 角色死亡处理逻辑
     } 
 
-    private boolean checkOKAll() {
+    private boolean isAllOK() {
         boolean res = true;
         for(int ok:synchornization) {
             if(ok == 0)
@@ -182,8 +155,10 @@ public class GameRunner implements MyService {
         }
         return res;
     }
-    
+
     private void gameStart() {
+
+        dataUpdate.put("action", "start");
         for(int i=0;i<ops.length;i++){
             OperationPanel op = ops[i];
             int n = 4;
@@ -191,13 +166,18 @@ public class GameRunner implements MyService {
                 op.handCards.add(getOneCardFromCardPile());
             }
         }
+
+        setAllSynchronization();     
         // 向玩家发送游戏数据
-        JSONObject dataObj = new JSONObject();
-        dataObj.put("api", "play");
-        dataObj.put("stage", "start");
+        ArrayList<General> generals = new ArrayList<>();
         for(int i=0;i<ops.length;i++) {
-            dataObj.put("data", getPlayerVisibleData(i));
-            sessionPools.sendMessage(playersName.get(i), dataObj);
+            generals.add(ops[i].general);
+        }
+        dataUpdate.put("generals", generals);
+
+        for(int i=0;i<ops.length;i++) {
+            dataUpdate.put("owns", ops[i]);
+            sessionPools.sendMessage(playersName.get(i), dataUpdate);
         }
         curPlayer = 0;
     }
@@ -221,9 +201,134 @@ public class GameRunner implements MyService {
         return cardPile.poll();
     }   
 
-    public JSONObject getPlayerVisibleData(int i) {
-        return null;
+    public int getPlayerNumber(String username) throws RunningException{
+        int res = -1;
+        for(int i=0;i<playersName.size();i++) {
+            if(username.equals(playersName.get(i))) {
+                res = i;
+                break;
+            }
+        }
+        
+        if(res == -1)
+            throw new RunningException("找不到玩家编号"); 
+        return res;
     }
+
+    public SkillRunTime getNewSkillRunTime(String name) throws RunningException{
+        CommonSkill skill = skills.get(name).init();
+
+        if(skill == null)
+            throw new RunningException("找不到该技能");
+
+        SkillRunTime newOne = skillHandleStack.getNew();
+        
+        newOne.skill = skill;
+        return newOne;
+    }
+
+    @Override
+    public void handleMessage(String username, JSONObject dataObj) {
+        // 处理玩家的输入操作
+        int num = -1;
+
+        try {
+            num = getPlayerNumber(username);
+            synchornization[num] = 1;
+            if(!isAllOK())
+                return;
+        } catch(RunningException re) {
+            re.printStackTrace();
+        }
+
+        switch(gStage){
+            case GAMESTART:
+                SkillRunTime skillRunTime =  skillHandleStack.getNew();
+                    skillRunTime.skill = new Round(this);
+                    skillRunTime.sender = curPlayer;
+                    skillRunTime.mask[0] = 0;
+                    skillRunTime.mask[1] = 0;
+                    skillRunTime.mask[2] = 0; 
+                    gStage = GameStage.GAMELOOP;
+                    executeSkill();            
+                break;
+            case GAMELOOP:
+                
+            case GAMEEND:
+
+        }
+    }           
+
+    
+    public void executeSkill() {
+        
+        // 按照skillRunTime的值，按照不同的状态栈顶技能
+        try{
+            SkillRunTime curSkillRunTime = skillHandleStack.getTop();
+            
+
+        } catch(RunningException re) {
+            re.printStackTrace();
+        }
+
+    }
+
+    public ArrayList<Card> initStandard() {
+        // 获得标准版的全部卡片
+        ArrayList<Card> cards = new ArrayList<>();
+        int index  = 0;
+        CommonSkill cardSkill;
+
+        for(int i=0; i<standardEdition.cardSets.length ;i++) {
+            CardSet cardSet = standardEdition.cardSets[i];
+            cardSkill = skillService.getCardSkillByName(cardSet.name);
+            for(int j = 0; j < cardSet.cardColors.length;j++) {
+                cards.add(new Card(index, cardSet.cardColors[j], cardSet.cardPoints[j], cardSkill));
+                // 加载卡片，并设置技能的引用
+                index++;
+            }
+        }
+        return cards;
+    }
+
+
+    public SkillRunTime launchNewSkill(String name, int sender, int accepter) throws RunningException{
+        
+        SkillRunTime res =  launchSkillPreCommonCode(name, sender);
+        
+        res.accepters.add(accepter);
+        skillHandleStack.spreadTopSkillRunTimeLower();
+        res.skill.launchMySelf(res);
+        
+        return res;
+    }
+    
+    public SkillRunTime launchNewSkill(String name, int sender, List<Integer> accepters) throws RunningException {
+        
+        SkillRunTime res = launchSkillPreCommonCode(name, sender);
+        
+        for(int i=0;i<accepters.size();i++)
+            res.accepters.add(accepters.get(i));
+        skillHandleStack.spreadTopSkillRunTimeLower();
+        res.skill.launchMySelf(res);
+
+        return res;
+    }   
+
+    public SkillRunTime launchSkillPreCommonCode(String name, int sender) throws RunningException {
+        
+        CommonSkill skill = skills.get("name");
+        if(skill == null) 
+            throw new RunningException("找不到技能的引用");
+        skill.init();
+        
+        SkillRunTime skillRunTime = skillHandleStack.getNew().init();
+        skillRunTime.skill = skill;
+        skillRunTime.sender = sender;
+        return skillRunTime;
+    }
+
+
 
     public void run() {
         // 分发四张牌，从1号玩家开始
@@ -240,17 +345,6 @@ public class GameRunner implements MyService {
         }
     }
     
-
-    // 启用同步
-    private void setAllSynchronization() {
-
-    }
-
-    private void setNotOkAll(){
-        for(int i=0;i<synchornization.length;i++) 
-            synchornization[i] = 0;
-    }
-
     public void shuffleCard(ArrayList<Card> cards) {
         cardPile.clear();
         Collections.shuffle(cards);
@@ -260,14 +354,20 @@ public class GameRunner implements MyService {
         }
     }
 
+    // 启用同步
+    private void setAllSynchronization() {
+        for(int i=0;i<synchornization.length;i++)
+            synchornization[i] = 0;
+    }
+
     // 向一名玩家发送指定的数据，而其余玩家接受不同的数据
     public void sendSeparateData(int p1, JSONObject data1, JSONObject data2, SkillRunTime skillRunTime) {
         
         setAllSynchronization();
 
         dataUpdate.put("action", skillRunTime.skill.getName());
-        dataUpdate.put("source", skillRunTime.source);
-        dataUpdate.put("target", skillRunTime.target);
+        dataUpdate.put("sender", skillRunTime.sender);
+        dataUpdate.put("accepters", skillRunTime.accepters);
         dataUpdate.put("data", data1);
         sessionPools.sendMessage(playersName.get(p1), dataUpdate);
         dataUpdate.put("data", data2);
@@ -284,13 +384,6 @@ public class GameRunner implements MyService {
         dataUpdate.remove("data");
     }
 
-    public void launchNewSkill(String name, int Initiator, int Actor) {
-        
-    }
-
-    public void launchNewSkillRunTime(SkillRunTime skillRunTime) {
-        skillRunTimeStack.add(skillRunTime);
-    }
-
+ 
 
 }

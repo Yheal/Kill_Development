@@ -12,8 +12,8 @@ public class General {
     public String name;         // 名字
     public String gimage;       // 图片
     public int blood;
-    public LinkedList<CommonSkill> skills;      // 技能名
-    public LinkedList<String> audios;      // 音效
+    public LinkedList<CommonSkill> skills;      // 技能
+    public LinkedList<String> audios;       // 音效
                           // String[] animiation; // 动画，暂时没有
     public LinkedList<Boolean> skillSelectAble;
     
