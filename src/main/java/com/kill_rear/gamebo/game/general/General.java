@@ -19,12 +19,14 @@ public class General {
     
     public General() {
         skills = new LinkedList<>();
-        audios = new LinkedList<>();        
+        audios = new LinkedList<>();
+        skillSelectAble = new LinkedList<>();        
     }
 
     public void addSkill(CommonSkill skill, String audio) {
         skills.add(skill);
         audios.add(audio);
+        skillSelectAble.add(false);
     }
     
 }

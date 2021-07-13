@@ -1,5 +1,6 @@
 package com.kill_rear.skill.round;
 
+import com.kill_rear.common.util.RunningException;
 import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.skill.CommonSkill;
 import com.kill_rear.skill.SkillRunTime;
@@ -26,8 +27,8 @@ public class RoundEnd extends CommonSkill{
 
     @Override
     public void launchMySelf(SkillRunTime myself) {
+        myself.accepters.add(myself.sender);
         runner.broadcast(myself, "start");
-        myself.skillHandleStage.setAfterEffectState();
     }
 
     @Override
@@ -37,6 +38,11 @@ public class RoundEnd extends CommonSkill{
 
     @Override
     public boolean modifyActivatedSkill(SkillRunTime skillRunTime) { return false;}
+
+    @Override
+    public void execute(SkillRunTime myself) throws RunningException {
+        myself.skillHandleStage.setAfterEffectState();
+    }
 
         
 }

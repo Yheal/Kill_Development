@@ -41,7 +41,7 @@ public class Round extends CommonSkill{
     public boolean acceptResult(SkillRunTime myself ,SkillRunTime previous)
     {
         // 回合技能永远不会结束
-        myself.skillHandleStage.setLaunchState();
+        myself.skillHandleStage.setExecuteState();
             switch(previous.skill.getName()) {
                 case "RoundPrepare":
                 case "RoundJudge"  :
@@ -57,69 +57,7 @@ public class Round extends CommonSkill{
     }
     
     @Override
-    public void launchMySelf(SkillRunTime myself) throws RunningException{
-        
-        int curPlayer = myself.sender;
-        OperationPanel op =  runner.ops[curPlayer];
-        myself.skillHandleStage.setAcceptState();  
-
-        // 执行一个个回合的阶段
-        switch(next) {
-
-            case 0:
-                if(next == 0 && op.state.name().equals("DEAD")) {
-                    runner.curPlayer = (curPlayer + 1) % runner.playersName.size();
-                    return;
-                } else 
-                    next = 1;
-
-            case 1:
-                if(stages[next] == 1){
-                    // 可以执行准备阶段
-                    runner.launchNewSkill("RoundPrepare", curPlayer, curPlayer);    
-                } else
-                    next++;
-                break;
-        
-            case 2:
-
-                if(stages[next] == 1){
-                    runner.launchNewSkill("RoundJudge", curPlayer, curPlayer);    
-                } else
-                    next++;
-                break;
-
-            case 3:
-                if(stages[next] == 1){
-                    runner.launchNewSkill("RoundGetCard", curPlayer, curPlayer);    
-                } else
-                    next++;
-                break;
-    
-            case 4:
-                if(stages[next] == 1) {
-                    runner.launchNewSkill("RoundPlay", curPlayer, curPlayer);    
-                } else
-                    next++;
-                    break;
-    
-            case 5:
-                if(stages[next] == 1){
-                    runner.launchNewSkill("RoundDiscard", curPlayer, curPlayer);    
-                } else
-                    next++;
-                break;
-            
-            case 6:
-                if(stages[next] == 1) {
-                    runner.launchNewSkill("RoundEnd", curPlayer, curPlayer);    
-                } else 
-                    // 不可以执行回合结束阶段，那么说明直接到下一位玩家
-                    turnToNext(myself);
-                break;
-                
-            }
-    }
+    public void launchMySelf(SkillRunTime myself) throws RunningException{}
 
     @Override
     public void destory() {
@@ -145,4 +83,68 @@ public class Round extends CommonSkill{
 
     @Override
     public boolean modifyActivatedSkill(SkillRunTime skillRunTime) { return false;}
+
+    @Override
+    public void execute(SkillRunTime myself) throws RunningException {
+        int curPlayer = myself.sender;
+        OperationPanel op =  runner.ops[curPlayer];
+        myself.skillHandleStage.setAcceptState();  
+
+        // 执行一个个回合的阶段
+        switch(next) {
+
+            case 0:
+                if(next == 0 && op.state.name().equals("DEAD")) {
+                    runner.curPlayer = (curPlayer + 1) % runner.playersName.size();
+                    return;
+                } else 
+                    next = 1;
+
+            case 1:
+                if(stages[next] == 1){
+                    // 可以执行准备阶段
+                    runner.launchNewSkill("RoundPrepare", curPlayer);    
+                } else
+                    next++;
+                break;
+        
+            case 2:
+
+                if(stages[next] == 1){
+                    runner.launchNewSkill("RoundJudge", curPlayer);    
+                } else
+                    next++;
+                break;
+
+            case 3:
+                if(stages[next] == 1){
+                    runner.launchNewSkill("RoundGetCard", curPlayer);    
+                } else
+                    next++;
+                break;
+    
+            case 4:
+                if(stages[next] == 1) {
+                    runner.launchNewSkill("RoundPlay", curPlayer);    
+                } else
+                    next++;
+                    break;
+    
+            case 5:
+                if(stages[next] == 1){
+                    runner.launchNewSkill("RoundDiscard", curPlayer);    
+                } else
+                    next++;
+                break;
+            
+            case 6:
+                if(stages[next] == 1) {
+                    runner.launchNewSkill("RoundEnd", curPlayer);    
+                } else 
+                    // 不可以执行回合结束阶段，那么说明直接到下一位玩家
+                    turnToNext(myself);
+                break;
+                
+            }
+    }
 }

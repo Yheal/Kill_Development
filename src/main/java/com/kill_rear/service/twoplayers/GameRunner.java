@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 
@@ -24,7 +23,10 @@ import com.kill_rear.service.ajax.SkillService;
 import com.kill_rear.service.common.SessionPools;
 import com.kill_rear.skill.CommonSkill;
 import com.kill_rear.skill.SkillRunTime;
+import com.kill_rear.skill.Support.DisCard;
+import com.kill_rear.skill.Support.PlayCard;
 import com.kill_rear.skill.round.Round;
+import com.kill_rear.skill.util.SkillDelayRun;
 import com.kill_rear.skill.util.SkillHandleStack;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,13 +149,8 @@ public class GameRunner implements MyService {
         // 角色死亡处理逻辑
     } 
 
-    private boolean isAllOK() {
-        boolean res = true;
-        for(int ok:synchornization) {
-            if(ok == 0)
-                res = false;
-        }
-        return res;
+    public void disCards(int sender, ArrayList<Card> cards) {
+
     }
 
     private void gameStart() {
@@ -215,14 +212,19 @@ public class GameRunner implements MyService {
         return res;
     }
 
-    public SkillRunTime getNewSkillRunTime(String name) throws RunningException{
+    public SkillRunTime createNewSkillRunTime() {
+        return skillHandleStack.getNew();
+    }
+
+    public SkillRunTime getNewSkillRunTime(String name, int sender, int accepter) throws RunningException{
         CommonSkill skill = skills.get(name).init();
 
         if(skill == null)
             throw new RunningException("找不到该技能");
 
-        SkillRunTime newOne = skillHandleStack.getNew();
-        
+        SkillRunTime newOne = skillHandleStack.getNew().init();
+        newOne.sender = sender;
+        newOne.accepters.add(accepter);
         newOne.skill = skill;
         return newOne;
     }
@@ -259,13 +261,25 @@ public class GameRunner implements MyService {
         }
     }           
 
-    
-    public void executeSkill() {
-        
-        // 按照skillRunTime的值，按照不同的状态栈顶技能
-        try{
-            SkillRunTime curSkillRunTime = skillHandleStack.getTop();
-            
+    public void executeSkill(){
+
+        // 检查是否需要停止运行，条件是:存在前端没有回应消息
+        if(!isAllOK())
+            return;
+
+        // 按照skillRunTime的值，按照不同的状态调用不同的函数栈顶技能
+        try {
+
+            SkillRunTime myself = skillHandleStack.getTop();
+            if(myself.skillHandleStage.isExecuteEffectState() && myself.mask[0] == 0) {
+                myself.skill.execute(myself);
+            } else if(myself.skillHandleStage.isAfterEffectState() && myself.mask[2] == 0){
+                // 退出当前技能状态，并向下传播本次处理的结果
+                myself.skill.afterEffect(myself);
+                skillHandleStack.popTop();
+            } else if(myself.mask[1] == 0) {
+                // 该状态好像不存在
+            }
 
         } catch(RunningException re) {
             re.printStackTrace();
@@ -291,31 +305,26 @@ public class GameRunner implements MyService {
         return cards;
     }
 
+    private boolean isAllOK() {
+        boolean res = true;
+        for(int ok:synchornization) {
+            if(ok == 0)
+                res = false;
+        }
+        return res;
+    }
 
-    public SkillRunTime launchNewSkill(String name, int sender, int accepter) throws RunningException{
+    public SkillRunTime launchNewSkill(String name, int sender) throws RunningException{
         
-        SkillRunTime res =  launchSkillPreCommonCode(name, sender);
-        
-        res.accepters.add(accepter);
-        skillHandleStack.spreadTopSkillRunTimeLower();
+        SkillRunTime res =  launchSkillCommonCode(name, sender);
+        skillHandleStack.spreadTop();
         res.skill.launchMySelf(res);
         
         return res;
     }
     
-    public SkillRunTime launchNewSkill(String name, int sender, List<Integer> accepters) throws RunningException {
-        
-        SkillRunTime res = launchSkillPreCommonCode(name, sender);
-        
-        for(int i=0;i<accepters.size();i++)
-            res.accepters.add(accepters.get(i));
-        skillHandleStack.spreadTopSkillRunTimeLower();
-        res.skill.launchMySelf(res);
 
-        return res;
-    }   
-
-    public SkillRunTime launchSkillPreCommonCode(String name, int sender) throws RunningException {
+    public SkillRunTime launchSkillCommonCode(String name, int sender) throws RunningException {
         
         CommonSkill skill = skills.get("name");
         if(skill == null) 
@@ -328,7 +337,16 @@ public class GameRunner implements MyService {
         return skillRunTime;
     }
 
+    public SkillRunTime launchDelaySkill(SkillDelayRun skillDelayRun, int accepter) throws RunningException {
+        
+        if(skillDelayRun.card == null) 
+            throw new RunningException("目前不支持的延迟处理");
 
+        SkillRunTime res = getNewSkillRunTime("PlayCard", skillDelayRun.sender, accepter);
+        PlayCard playCard = (PlayCard)res.skill;
+        playCard.launchDelayTip(res, skillDelayRun.card);
+        return res;
+    }   
 
     public void run() {
         // 分发四张牌，从1号玩家开始
@@ -345,6 +363,14 @@ public class GameRunner implements MyService {
         }
     }
     
+    // 出牌技能，参数是玩家、卡牌
+    public SkillRunTime playCard(int player, Card card) {
+        SkillRunTime res = skillHandleStack.getNew();
+        PlayCard playCard = (PlayCard)skills.get("PlayCard");
+        
+        return null;
+    }
+
     public void shuffleCard(ArrayList<Card> cards) {
         cardPile.clear();
         Collections.shuffle(cards);
@@ -378,6 +404,7 @@ public class GameRunner implements MyService {
         dataUpdate.remove("data");
 
     }
+    
     public void sendSingleMessage(int i, SkillRunTime skill, JSONObject data) {
         dataUpdate.put("data", data);
         sessionPools.sendMessage(playersName.get(i), data);

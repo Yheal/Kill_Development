@@ -1,0 +1,119 @@
+// 未完成的类，RoundAction、RoundDisCard、RoundEnd、OperationPanel
+
+后 -> 前
+start阶段
+{
+    api: play
+    stage: start
+    action: 'start'
+    generals: general
+    owns: op[i]
+}
+后 -> 前
+{   
+    username: username
+    api: play
+    pattern: two
+    stage: start
+    message: ""
+}
+
+update阶段
+
+{
+    api: play
+    stage: update
+    skill技能相关
+}
+
+round（回合，不存在的）
+{
+    action: 'Round'
+    sender: curPlayer,
+    accepter: curplayer,
+}
+
+RoundPrepare
+{
+    action：'RoundPrepare'
+    sender: %playernumber%
+    accepter: curPlayer
+    data: 'start'
+}
+
+前->后
+{
+    data: ''
+}
+RoundJudge
+{
+    action: 'RoundJudge',
+    sender: %playernumber%
+    accepter: curPlayer
+    data: 'start'
+}
+前->后
+{
+    data: ''
+}
+
+RoundGetCard
+{
+    action: 'RoundGetCard',
+    source: 'target'
+    targte:　'All'
+    data: target：卡牌数据
+          other：2
+    不同的人物发送的数据不同
+}
+
+前->后
+{
+    data: ''
+}
+
+
+RoundAction
+{
+    action: 'RoundJudge',
+    source: %playernumber%
+    target: %playernumber%
+    data: ops[%playernumber%]
+}
+前->后
+{
+    Type： PLAYER
+    String value
+}
+
+
+3、当玩家产生一个输入之后，M会根据这个输入类型，转入不同的处理函数。
+    如果是玩家，那么M会记录本次对象到栈顶技能运行时类。
+    如果是武将技能，那么M检查该技能效果是否可以影响到当前栈顶的技能。
+        如果可以，那么产生一个新的技能运行时类并压入栈，转而处理这个类。
+        如果不可以，那么本次的点击是无效，事实上，这种情况也是不存在的，参见见上面，我们已计算出了所有可能被点击的对象。
+
+        如果是手牌，那么依然检查该技能效果，但是和前面有点不一样的是，武将技能点击是独立的，而手牌的点击却不一定.
+        需要栈顶技能去检查本次的目标到达是发动该技能需要的条件, 还是响应.
+        (如果是前者, 那么技能运行时类的状态不是Running, 而后者则是Running, 所以依然可以通过M去检查)
+            
+        如果是装备区, 那么和武将的一样.
+        如果是其他CARD, 例如五谷丰登 过河拆桥这些, 那么我们依然像手牌一样处理.
+
+        如果是按钮, 那么需要分情况, 以后再补
+
+        如果是空
+            如果是当前栈顶技能不是Running, 那么取消当前技能的触发.
+            如果是Running, 那么直接调用当前栈顶技能的与响应结果处理有关的函数.
+
+        到此, 所有类型基本上都被覆盖到了.
+
+RoundDisCard
+{   
+
+}
+
+RoundEnd
+{
+    
+}

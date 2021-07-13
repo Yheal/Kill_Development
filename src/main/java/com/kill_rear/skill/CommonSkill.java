@@ -20,7 +20,7 @@ public abstract class CommonSkill {
     // 接受输入
     public void acceptInput(SkillRunTime myself,Input input) throws RunningException {}
 
-    // -接受输入之后
+    // -效果执行完毕之后
     public void afterEffect(SkillRunTime myself) { myself.result = "ok"; }
 
     // 设置前端可以被响应的对象
@@ -37,4 +37,5 @@ public abstract class CommonSkill {
     public abstract SkillType getSkillType();
     public abstract boolean acceptResult(SkillRunTime myself ,SkillRunTime previous);
     public abstract boolean modifyActivatedSkill(SkillRunTime skillRunTime);
+    public abstract void execute(SkillRunTime myself) throws RunningException;
 }

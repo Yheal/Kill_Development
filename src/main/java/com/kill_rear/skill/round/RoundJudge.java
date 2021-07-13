@@ -1,5 +1,6 @@
 package com.kill_rear.skill.round;
 
+import com.kill_rear.common.util.RunningException;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.skill.CommonSkill;
@@ -18,7 +19,7 @@ public class RoundJudge extends CommonSkill {
 
     @Override
     public boolean acceptResult(SkillRunTime myself, SkillRunTime previous) {
-        myself.skillHandleStage.setLaunchState();
+        myself.skillHandleStage.setExecuteState();
         return false;
     }
 
@@ -36,19 +37,28 @@ public class RoundJudge extends CommonSkill {
 
     @Override
     public void launchMySelf(SkillRunTime myself) {
+        // 发给单个人，考虑不使用广播
+        myself.accepters.add(myself.sender);
+        runner.broadcast(myself, "start");  
+    }
+
+    @Override
+    public boolean modifyActivatedSkill(SkillRunTime skillRunTime) { return false; }
+
+
+    @Override
+    public void execute(SkillRunTime myself) throws RunningException {
         OperationPanel curPanel = runner.ops[runner.curPlayer];
         if(curPanel.judge.isEmpty()) {
            myself.skillHandleStage.setAfterEffectState();
            return;
-        }
-
-        SkillDelayRun judgeTarget =  curPanel.judge.pop();
+        }        
+        // 启动延迟出牌技能
         myself.skillHandleStage.setAcceptState();
+        SkillDelayRun skillDelayRun = curPanel.judge.get(0);
+        curPanel.judge.remove(0);
+        runner.launchDelaySkill(skillDelayRun, runner.curPlayer);
         
     }
-
-
-    @Override
-    public boolean modifyActivatedSkill(SkillRunTime skillRunTime) { return false; }
 
 }

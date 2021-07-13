@@ -1,5 +1,6 @@
 package com.kill_rear.skill.round;
 
+import com.kill_rear.common.util.RunningException;
 import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.skill.CommonSkill;
 import com.kill_rear.skill.SkillRunTime;
@@ -26,6 +27,7 @@ public class RoundDisCard extends CommonSkill{
 
     @Override
     public void launchMySelf(SkillRunTime myself) {
+        myself.accepters.add(myself.sender);
     }
 
     @Override
@@ -35,5 +37,11 @@ public class RoundDisCard extends CommonSkill{
 
     @Override
     public boolean modifyActivatedSkill(SkillRunTime skillRunTime) { return false;}
+
+    @Override
+    public void execute(SkillRunTime myself) throws RunningException {
+        // TODO Auto-generated method stub
+        
+    }
     
 }

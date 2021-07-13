@@ -35,9 +35,9 @@ public class SkillHandleStack {
         return handleStack.get(top);
     }
 
-    public void pop() { top--; }
 
-    public void spreadTopSkillRunTimeLower() throws RunningException{
+    // 创建新的技能运行时，需要从栈顶向栈底传递
+    public void spreadTop() throws RunningException{
         SkillRunTime topSkillRunTime = getTop();
         for(int i=top-1;i>=0;i--) {
             boolean res = handleStack.get(i).skill.modifyActivatedSkill(topSkillRunTime);
@@ -45,5 +45,19 @@ public class SkillHandleStack {
                 return;
         }
         
+    }
+
+    // 结果一样
+    public void popTop() throws RunningException{
+        
+        SkillRunTime previous = getTop();
+        top--;
+        
+        for(int i=top;i>=0;i--) {
+            SkillRunTime myself = handleStack.get(i);
+            boolean res = myself.skill.acceptResult(myself, previous);
+            if(!res)
+                return;
+        }
     }
 } 

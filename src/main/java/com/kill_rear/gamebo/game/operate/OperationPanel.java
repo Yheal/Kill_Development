@@ -1,6 +1,7 @@
 package com.kill_rear.gamebo.game.operate;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import com.kill_rear.gamebo.game.card.Card;
@@ -18,6 +19,7 @@ public class OperationPanel {
 
     /* 数据区 */
     public int blood;   // 血量
+    public int maxBlood;
     public int attackDistance, reachDistance; // 攻击距离，达到距离
     /* 武将 */
     public General general;
@@ -31,7 +33,7 @@ public class OperationPanel {
     public Card[] equipment;
 
     /* 判定区 */
-    public Stack<SkillDelayRun> judge;
+    public List<SkillDelayRun> judge;
 
 
     public Button[] buttons;
@@ -41,6 +43,7 @@ public class OperationPanel {
         
         this.state = PlayerState.COMMON;
         this.blood = blood;                // 血量默认为4
+        this.maxBlood = blood;
         this.attackDistance  = this.reachDistance = 1;   // 距离默认为1
         this.general = general;                        // 先填为空
         
@@ -48,7 +51,7 @@ public class OperationPanel {
         playerSelect = new boolean[number];                   // 玩家是否选中               
         handCards = new ArrayList<Card>();                      // 手牌 
         equipment = new Card[4];               // 装备
-        judge = new Stack<>();        // 判定区
+        judge = new ArrayList<>();        // 判定区
         buttons = new Button[3];
         
         for(int i=0;i<3;i++) {

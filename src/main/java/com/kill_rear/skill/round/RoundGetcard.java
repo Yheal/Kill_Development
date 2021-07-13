@@ -3,6 +3,7 @@ package com.kill_rear.skill.round;
 import java.util.ArrayList;
 
 import com.alibaba.fastjson.JSONObject;
+import com.kill_rear.common.util.RunningException;
 import com.kill_rear.gamebo.game.card.Card;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.service.twoplayers.GameRunner;
@@ -36,6 +37,20 @@ public class RoundGetcard extends CommonSkill{
 
     @Override
     public void launchMySelf(SkillRunTime myself) { 
+        myself.accepters.add(myself.sender);
+        runner.broadcast(myself, "start");  
+    }
+
+    @Override
+    public boolean acceptResult(SkillRunTime myself, SkillRunTime previous) {
+        return false;
+    }
+
+    @Override
+    public boolean modifyActivatedSkill(SkillRunTime skillRunTime) { return false;}
+
+    @Override
+    public void execute(SkillRunTime myself) throws RunningException {
         OperationPanel cur = runner.ops[runner.curPlayer];
         ArrayList<Card> gets = new ArrayList<>();
         int n = 2;
@@ -54,13 +69,5 @@ public class RoundGetcard extends CommonSkill{
         myself.skillHandleStage.setAfterEffectState(); // 摸牌不需要接受其他技能
         runner.sendSeparateData(myself.sender, data1, data2, myself);
     }
-
-    @Override
-    public boolean acceptResult(SkillRunTime myself, SkillRunTime previous) {
-        return false;
-    }
-
-    @Override
-    public boolean modifyActivatedSkill(SkillRunTime skillRunTime) { return false;}
 
 }

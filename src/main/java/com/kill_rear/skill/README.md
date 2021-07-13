@@ -19,7 +19,7 @@ accept       -- 接受前一技能的结果
 M每次处理的时候，都会检查是否需要等待用户，如果不需要按照上面的流程走。
 否则，停止执行，等待下次的用户输入。
 
-// 未完成的类，RoundJudge、RoundAction、RoundDisCard、RoundEnd、OperationPanel
+// 未完成的类，RoundAction、RoundDisCard、RoundEnd、OperationPanel
 
 后 -> 前
 start阶段
@@ -52,16 +52,25 @@ round（回合）
 }
 
 RoundPrepare
+后->前
 {
-
+    action: 'RoundJudge'
+    source: 
+    target: All
+    data: 'start'
 }
+
 
 RoundJudge
 {
     action: 'RoundJudge',
     source: %playernumber%
-    target: curPlayer
+    target: All
     data: skill.getName()
+}
+前->后
+{
+    data: ''
 }
 
 RoundGetCard
@@ -73,10 +82,16 @@ RoundGetCard
           other：2
     不同的人物发送的数据不同
 }
-
+前->后
+{
+    data: ''
+}
 RoundAction
 {
-
+    action: 'RoundJudge',
+    source: %playernumber%
+    target: %playernumber%
+    data: ops[%playernumber%]
 }
 
 RoundDisCard
