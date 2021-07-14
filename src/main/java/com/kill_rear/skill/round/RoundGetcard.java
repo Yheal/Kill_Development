@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.alibaba.fastjson.JSONObject;
 import com.kill_rear.common.util.RunningException;
 import com.kill_rear.gamebo.game.card.Card;
+import com.kill_rear.gamebo.game.operate.Input;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.skill.CommonSkill;
@@ -20,7 +21,11 @@ public class RoundGetcard extends CommonSkill{
 
     public RoundGetcard(GameRunner runner) { super(runner); }
     
-    
+    @Override
+    public void acceptInput(SkillRunTime myself, Input input) throws RunningException {
+        runner.setiThAck(input.player);
+    }
+
     @Override
     public void destory() {
         runner = null;        
@@ -66,7 +71,7 @@ public class RoundGetcard extends CommonSkill{
         JSONObject data2 = new JSONObject();
         data2.put("data", 2);
 
-        myself.skillHandleStage.setAfterEffectState(); // 摸牌不需要接受其他技能
+        myself.skillHandleStage.setAfterExecute(); // 摸牌不需要接受其他技能
         runner.sendSeparateData(myself.sender, data1, data2, myself);
     }
 

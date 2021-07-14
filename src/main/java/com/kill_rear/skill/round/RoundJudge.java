@@ -1,6 +1,7 @@
 package com.kill_rear.skill.round;
 
 import com.kill_rear.common.util.RunningException;
+import com.kill_rear.gamebo.game.operate.Input;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.skill.CommonSkill;
@@ -19,7 +20,7 @@ public class RoundJudge extends CommonSkill {
 
     @Override
     public boolean acceptResult(SkillRunTime myself, SkillRunTime previous) {
-        myself.skillHandleStage.setExecuteState();
+        myself.skillHandleStage.setExecute();
         return false;
     }
 
@@ -50,15 +51,21 @@ public class RoundJudge extends CommonSkill {
     public void execute(SkillRunTime myself) throws RunningException {
         OperationPanel curPanel = runner.ops[runner.curPlayer];
         if(curPanel.judge.isEmpty()) {
-           myself.skillHandleStage.setAfterEffectState();
+           myself.skillHandleStage.setAfterExecute();
            return;
         }        
         // 启动延迟出牌技能
-        myself.skillHandleStage.setAcceptState();
+        myself.skillHandleStage.setAccept();
         SkillDelayRun skillDelayRun = curPanel.judge.get(0);
         curPanel.judge.remove(0);
         runner.launchDelaySkill(skillDelayRun, runner.curPlayer);
         
+    }
+
+
+    @Override
+    public void acceptInput(SkillRunTime myself, Input input) throws RunningException {
+        runner.setiThAck(input.player);
     }
 
 }

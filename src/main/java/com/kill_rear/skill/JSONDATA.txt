@@ -19,7 +19,14 @@ start阶段
 }
 
 update阶段
-
+前 -> 后
+{
+    username: username,
+    api: play,
+    pattern: two,
+    value: value;(string)
+    type: inputType(整数)
+}
 {
     api: play
     stage: update
@@ -78,12 +85,18 @@ RoundAction
     action: 'RoundJudge',
     source: %playernumber%
     target: %playernumber%
-    data: ops[%playernumber%]
+    data: step: 0
+          step: 1 ops[%playernumber%]
+          
 }
 前->后
 {
     Type： PLAYER
-    String value
+    String: value
+    step: 1
+    VALUE = ACK
+    step: 2
+    OTHER
 }
 
 
@@ -110,9 +123,19 @@ RoundAction
 
 RoundDisCard
 {   
-
+    action: 'RoundJudge',
+    source: %playernumber%
+    target: %playernumber%
+    data: 
+        step = 0 start
+        step = 1 Cards
 }
-
+前 -> 后
+{
+    roomId(必要): 
+    Type： ACK
+    String: value
+}
 RoundEnd
 {
     

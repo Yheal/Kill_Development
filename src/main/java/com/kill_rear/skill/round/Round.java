@@ -2,6 +2,7 @@ package com.kill_rear.skill.round;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kill_rear.common.util.RunningException;
+import com.kill_rear.gamebo.game.operate.Input;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.skill.CommonSkill;
@@ -41,7 +42,7 @@ public class Round extends CommonSkill{
     public boolean acceptResult(SkillRunTime myself ,SkillRunTime previous)
     {
         // 回合技能永远不会结束
-        myself.skillHandleStage.setExecuteState();
+        myself.skillHandleStage.setExecute();
             switch(previous.skill.getName()) {
                 case "RoundPrepare":
                 case "RoundJudge"  :
@@ -56,6 +57,11 @@ public class Round extends CommonSkill{
         return false;
     }
     
+    @Override
+    public void acceptInput(SkillRunTime myself, Input input) throws RunningException {
+        // nothing    
+    }
+
     @Override
     public void launchMySelf(SkillRunTime myself) throws RunningException{}
 
@@ -88,7 +94,7 @@ public class Round extends CommonSkill{
     public void execute(SkillRunTime myself) throws RunningException {
         int curPlayer = myself.sender;
         OperationPanel op =  runner.ops[curPlayer];
-        myself.skillHandleStage.setAcceptState();  
+        myself.skillHandleStage.setAccept();  
 
         // 执行一个个回合的阶段
         switch(next) {
@@ -103,7 +109,7 @@ public class Round extends CommonSkill{
             case 1:
                 if(stages[next] == 1){
                     // 可以执行准备阶段
-                    runner.launchNewSkill("RoundPrepare", curPlayer);    
+                    runner.launchNewSkill("RoundPrepare", curPlayer, curPlayer);    
                 } else
                     next++;
                 break;
@@ -111,35 +117,35 @@ public class Round extends CommonSkill{
             case 2:
 
                 if(stages[next] == 1){
-                    runner.launchNewSkill("RoundJudge", curPlayer);    
+                    runner.launchNewSkill("RoundJudge", curPlayer, curPlayer);    
                 } else
                     next++;
                 break;
 
             case 3:
                 if(stages[next] == 1){
-                    runner.launchNewSkill("RoundGetCard", curPlayer);    
+                    runner.launchNewSkill("RoundGetCard", curPlayer, curPlayer);    
                 } else
                     next++;
                 break;
     
             case 4:
                 if(stages[next] == 1) {
-                    runner.launchNewSkill("RoundPlay", curPlayer);    
+                    runner.launchNewSkill("RoundPlay", curPlayer, curPlayer);    
                 } else
                     next++;
                     break;
     
             case 5:
                 if(stages[next] == 1){
-                    runner.launchNewSkill("RoundDiscard", curPlayer);    
+                    runner.launchNewSkill("RoundDiscard", curPlayer, curPlayer);    
                 } else
                     next++;
                 break;
             
             case 6:
                 if(stages[next] == 1) {
-                    runner.launchNewSkill("RoundEnd", curPlayer);    
+                    runner.launchNewSkill("RoundEnd", curPlayer, curPlayer);    
                 } else 
                     // 不可以执行回合结束阶段，那么说明直接到下一位玩家
                     turnToNext(myself);
@@ -147,4 +153,6 @@ public class Round extends CommonSkill{
                 
             }
     }
+
+
 }

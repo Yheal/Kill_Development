@@ -36,6 +36,15 @@ public class SkillHandleStack {
     }
 
 
+    public boolean isInputAcceptable(int num) throws RunningException{
+        SkillRunTime topSkill = getTop();
+        for(Integer i:topSkill.accepters) {
+            if(i == num)
+                return true;
+        }
+        return false;
+    }
+
     // 创建新的技能运行时，需要从栈顶向栈底传递
     public void spreadTop() throws RunningException{
         SkillRunTime topSkillRunTime = getTop();

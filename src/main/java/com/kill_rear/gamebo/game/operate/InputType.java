@@ -19,7 +19,8 @@ public enum InputType {
     EQUIPMENT(3),
     CARD(4),           // 非以上两种的牌
     BUTTON(5),
-    NON(6);           // 空
+    ACK(6),
+    NON(7);           // 空
 
     private int type;
     InputType(int t) { this.type = t; }

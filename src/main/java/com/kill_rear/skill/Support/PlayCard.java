@@ -3,6 +3,7 @@ package com.kill_rear.skill.Support;
 import com.alibaba.fastjson.JSONObject;
 import com.kill_rear.common.util.RunningException;
 import com.kill_rear.gamebo.game.card.Card;
+import com.kill_rear.gamebo.game.operate.Input;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.skill.CommonSkill;
@@ -47,9 +48,11 @@ public class PlayCard extends CommonSkill{
     @Override
     public void execute(SkillRunTime myself) throws RunningException {
         // 如果我们这个字段没有被屏蔽，那么执行cardToUse的效果，也就是new一个信息的skillRunTime出来
-        // 事实上，不需要new一个新的，直接执行即可。
-        myself.skill = cardToUse.skill.init();
-        myself.skill.execute(myself);
+        SkillRunTime tmp =  runner.createNewSkillRunTime();
+        for(Integer e:myself.accepters) 
+            tmp.accepters.add(e);
+        tmp.skill = cardToUse.skill.init();
+        tmp.sender = myself.sender;
     }
 
     @Override
@@ -63,6 +66,16 @@ public class PlayCard extends CommonSkill{
 
     @Override
     public void launchMySelf(SkillRunTime myself) throws RunningException {
+        
+        // 计算接受对象, 如果没有指定对象，那么为自己
+        OperationPanel op = runner.ops[myself.sender];
+        for(int i=0;i<op.playerSelect.length;i++) {
+            if(op.playerSelect[i]) 
+                myself.accepters.add(i);
+        }  
+        if(myself.accepters.size() == 0)
+            myself.accepters.add(myself.sender);
+
         // 如果打出的是装备牌，那么我们需要替换启动打牌玩家的装备区，然后不执行我们的效果
         // 如果是延迟牌，那么需要分情况，如果已经在判定区里，那么执行它功能，否则不执行，创建一个新的SkillDealay
         // 其余的不需要
@@ -116,9 +129,8 @@ public class PlayCard extends CommonSkill{
         return false;
     }
 
-    public void init(SkillRunTime myself, Card card) {
-        this.cardToUse = card;
+    @Override
+    public void acceptInput(SkillRunTime myself, Input input) throws RunningException {
+        // nothing
     }
-
-
 }

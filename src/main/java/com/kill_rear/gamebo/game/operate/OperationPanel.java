@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import com.kill_rear.common.util.RunningException;
 import com.kill_rear.gamebo.game.card.Card;
 import com.kill_rear.gamebo.game.general.General;
 import com.kill_rear.gamebo.game.stage.PlayerState;
@@ -23,9 +24,11 @@ public class OperationPanel {
     public int attackDistance, reachDistance; // 攻击距离，达到距离
     /* 武将 */
     public General general;
-    /*其他玩家是否被选中状态 */
-    public boolean[] playerSelect; 
     
+    /*其他玩家是否可以被选中状态 */
+    public int[] playerSelect; 
+
+
     /*手牌以及是否被选中状态 */
     public ArrayList<Card> handCards;
 
@@ -48,7 +51,7 @@ public class OperationPanel {
         this.general = general;                        // 先填为空
         
         /* 交互数据结构 */
-        playerSelect = new boolean[number];                   // 玩家是否选中               
+        playerSelect = new int[number];                   // 玩家是否可以选中               
         handCards = new ArrayList<Card>();                      // 手牌 
         equipment = new Card[4];               // 装备
         judge = new ArrayList<>();        // 判定区
@@ -60,4 +63,32 @@ public class OperationPanel {
         }
         shaNumbers = 1;
     }
+
+    public void setOnlyHandCardSelectable() {
+        
+        for(int i=0;i<playerSelect.length;i++)
+            playerSelect[i] = 0;
+
+        for(int i=0;i<4;i++)
+            equipment[i].selectAble = false;
+        
+        for(int i=0;i<general.skillSelectAble.size();i++) 
+            general.skillSelectAble.set(i, false);
+
+        for(int i=0;i<buttons.length;i++) 
+            buttons[i].selectAble = false;
+        
+        buttons[2].hide = true;
+    }
+
+    public Card setHandCardChoose(int i) throws RunningException{
+        
+        for(Card card:handCards) {
+            if(card.num == i) {
+                card.choosen = true;
+                return card;
+            }
+        }
+        throw new RunningException("控制错误");
+    }   
 }

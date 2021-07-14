@@ -16,7 +16,7 @@ import com.kill_rear.skill.util.SkillType;
 // 核心类之一
 public class RoundAction extends CommonSkill {
 
-
+    private int step = 0;
     private CommonSkill generalSkillPrepareToLaunch = null;
     private Card handCardPrepareToThrow = null;
     private Card equipmentCard = null;
@@ -26,8 +26,8 @@ public class RoundAction extends CommonSkill {
     }
     
     @Override
-    public boolean acceptResult(SkillRunTime myself, SkillRunTime previous) {
-        myself.skillHandleStage.setExecuteState();
+    public boolean acceptResult(SkillRunTime myself, SkillRunTime previous) {        
+        myself.handleRestart();
         return false;
     }
 
@@ -47,6 +47,7 @@ public class RoundAction extends CommonSkill {
 
     @Override
     public CommonSkill init() {
+        step = 0;
         generalSkillPrepareToLaunch = null;
         handCardPrepareToThrow = null;
         equipmentCard = null;
@@ -77,6 +78,10 @@ public class RoundAction extends CommonSkill {
     @Override
     public void acceptInput(SkillRunTime myself, Input input) throws RunningException {
         
+        if(step == 0) {
+            runner.setiThAck(input.player);
+            return;
+        }
         OperationPanel op = runner.ops[myself.sender];
         int num = -1;
         // input好像没有什么用，先留着
@@ -161,13 +166,13 @@ public class RoundAction extends CommonSkill {
                         break; 
                     case "end":
                         // 结束回合
-                        myself.skillHandleStage.setAfterEffectState();
+                        myself.skillHandleStage.setAfterExecute();
                         break;
                     default:
                         throw new RunningException("不认识的按钮");
                 }
             case "NON":
-                myself.skillHandleStage.setAfterEffectState();
+                myself.skillHandleStage.setAfterExecute();
                 return;
                 // 回合结束
         }
@@ -188,16 +193,16 @@ public class RoundAction extends CommonSkill {
     private void launchCurrentSkill(SkillRunTime myself) throws RunningException {
 
         // 设置接受态
-        myself.skillHandleStage.setAcceptState();
+        myself.skillHandleStage.setAccept();
         if(this.handCardPrepareToThrow != null) {
             // 手牌，启动需要先触发丢牌动作，再执行效果，其它的不需要
             Card tmp = this.handCardPrepareToThrow;
             this.handCardPrepareToThrow = null;
             runner.playCard(myself.sender, tmp);
         } else if(this.generalSkillPrepareToLaunch != null){
-            runner.launchNewSkill(this.generalSkillPrepareToLaunch.getName(), myself.sender);
+           // runner.launchNewSkill(this.generalSkillPrepareToLaunch.getName(), myself.sender);
         } else if(this.equipmentCard != null){
-            runner.launchNewSkill(this.equipmentCard.skill.getName(), myself.sender);
+           // runner.launchNewSkill(this.equipmentCard.skill.getName(), myself.sender);
         } else {
             throw new RunningException("找不到技能引用");
         }
@@ -218,13 +223,14 @@ public class RoundAction extends CommonSkill {
     @Override
     public void execute(SkillRunTime myself) throws RunningException {
 
-        // 没有启动技能前，禁止选中其他玩家aaa
-        generalSkillPrepareToLaunch = null;
+        step = 1;                           // 阶段1 
+        generalSkillPrepareToLaunch = null; // 浮空
         handCardPrepareToThrow = null;
         equipmentCard = null;
 
         OperationPanel op = runner.ops[myself.sender];
 
+        // 没有启动技能前，禁止选中其他玩家
         for(int i=0;i<op.playerSelect.length;i++)
             op.playerSelect[i] = false;
 
@@ -294,6 +300,7 @@ public class RoundAction extends CommonSkill {
 
         op.buttons[2].hide = true;
         
+        runner.sendInteractionData(myself.sender);
     }
 
 

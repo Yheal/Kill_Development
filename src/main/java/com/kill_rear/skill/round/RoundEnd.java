@@ -1,6 +1,7 @@
 package com.kill_rear.skill.round;
 
 import com.kill_rear.common.util.RunningException;
+import com.kill_rear.gamebo.game.operate.Input;
 import com.kill_rear.service.twoplayers.GameRunner;
 import com.kill_rear.skill.CommonSkill;
 import com.kill_rear.skill.SkillRunTime;
@@ -13,6 +14,11 @@ public class RoundEnd extends CommonSkill{
         super(runner);
     }
 
+    @Override
+    public void acceptInput(SkillRunTime myself, Input input) throws RunningException {
+        runner.setiThAck(input.player);
+    }
+    
     @Override
     public void destory() { runner = null; }
 
@@ -41,8 +47,10 @@ public class RoundEnd extends CommonSkill{
 
     @Override
     public void execute(SkillRunTime myself) throws RunningException {
-        myself.skillHandleStage.setAfterEffectState();
+        myself.skillHandleStage.setAfterExecute();
     }
+
+
 
         
 }

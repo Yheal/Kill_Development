@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
+
 
 import com.alibaba.fastjson.JSONObject;
 import com.kill_rear.common.util.Pair;
@@ -15,6 +17,8 @@ import com.kill_rear.gamebo.game.edition.CardSet;
 import com.kill_rear.gamebo.game.edition.EditionType;
 import com.kill_rear.gamebo.game.edition.Standard;
 import com.kill_rear.gamebo.game.general.General;
+import com.kill_rear.gamebo.game.operate.Input;
+import com.kill_rear.gamebo.game.operate.InputType;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.gamebo.game.stage.GameStage;
 import com.kill_rear.service.MyService;
@@ -57,7 +61,8 @@ public class GameRunner implements MyService {
     public Stack<Card> disCard;           // 废牌
     public OperationPanel[] ops;          // 玩家操作的数据结构
     public int curPlayer;
-    
+    public Input input;
+
     /* 游戏控制 */
     public SkillHandleStack skillHandleStack;
     private HashMap<String, CommonSkill> skills = null;                  // 技能和技能逻辑处理类的映射
@@ -66,6 +71,8 @@ public class GameRunner implements MyService {
     
     /* 游戏同步 */
     private int[] synchornization;
+
+    /* 数据 */
     private JSONObject dataUpdate;
 
     public int getRoomId() { return roomId; }
@@ -149,6 +156,38 @@ public class GameRunner implements MyService {
         // 角色死亡处理逻辑
     } 
 
+    public void executeSkill() throws RunningException{
+
+        // 检查是否需要停止运行，条件是:存在前端没有回应消息
+        
+        // 按照skillRunTime的值，按照不同的状态调用不同的函数栈顶技能
+        // 没有同步，取栈顶，分析栈顶
+        // 一直循环下去
+        while(isAllOK()) {
+            try {
+
+                SkillRunTime myself = skillHandleStack.getTop();
+                switch(myself.skillHandleStage.getTag()) {
+                    case 0:
+
+                    case 1:
+                    
+                    case 2:
+                    
+                    case 3:
+                    
+                    case 4:
+                    default:
+                        throw new RunningException("错误控制");
+                }
+            } catch(RunningException re) {
+                re.printStackTrace();
+            }
+    
+        }
+
+    }
+
     public void disCards(int sender, ArrayList<Card> cards) {
 
     }
@@ -184,7 +223,7 @@ public class GameRunner implements MyService {
     }
 
     private void gameEnd() {
-
+        // 计算一些奖励等等
     }
 
     public Card getOneCardFromCardPile() {
@@ -213,7 +252,7 @@ public class GameRunner implements MyService {
     }
 
     public SkillRunTime createNewSkillRunTime() {
-        return skillHandleStack.getNew();
+        return skillHandleStack.getNew().init();
     }
 
     public SkillRunTime getNewSkillRunTime(String name, int sender, int accepter) throws RunningException{
@@ -230,62 +269,79 @@ public class GameRunner implements MyService {
     }
 
     @Override
-    public void handleMessage(String username, JSONObject dataObj) {
+    public void handleMessage(String username, JSONObject dataObj){
         // 处理玩家的输入操作
         int num = -1;
 
         try {
             num = getPlayerNumber(username);
             synchornization[num] = 1;
-            if(!isAllOK())
-                return;
         } catch(RunningException re) {
             re.printStackTrace();
         }
 
-        switch(gStage){
-            case GAMESTART:
-                SkillRunTime skillRunTime =  skillHandleStack.getNew();
+        try{
+            switch(gStage){
+                case GAMESTART:
+                    SkillRunTime skillRunTime =  skillHandleStack.getNew();
                     skillRunTime.skill = new Round(this);
                     skillRunTime.sender = curPlayer;
+                    skillRunTime.accepters.add(curPlayer);
                     skillRunTime.mask[0] = 0;
                     skillRunTime.mask[1] = 0;
                     skillRunTime.mask[2] = 0; 
                     gStage = GameStage.GAMELOOP;
                     executeSkill();            
-                break;
-            case GAMELOOP:
-                
-            case GAMEEND:
+                    break;
+                case GAMELOOP:
+                    // 提取输入
+                    input.player = getPlayerNumber(username);
+                    
+                    // 不接受不是当前技能目标的玩家
+                    if(!skillHandleStack.isInputAcceptable(input.player))
+                        return;
+                    
+                    input.value = dataObj.getString("value");
+                    
+                    switch(dataObj.getInteger("type")) {
+                        case 0:
+                            input.type = InputType.PLAYER;
+                            break;
+                        case 1:
+                            input.type = InputType.GENERALSKILL;
+                            break;
+                        case 2:
+                            input.type = InputType.HANDCARD;
+                            break;
+                        case 3:
+                            input.type = InputType.EQUIPMENT;
+                            break;
+                        case 4:
+                            input.type = InputType.CARD;
+                            break;
+                        case 5:
+                            input.type = InputType.BUTTON;
+                            break;
+                        case 6:
+                            input.type = InputType.ACK;
+                            break;
+                        case 7:
+                            input.type = InputType.NON;
+                            break;
+                        default:
+                            throw new RunningException("错误的输入");
+                    }
+                    SkillRunTime myself = skillHandleStack.getTop();
+                    myself.skill.acceptInput(myself, input); 
+                    executeSkill();
+                    break;
+                case GAMEEND:
 
+            }
+        }catch(RunningException e) {
+            e.printStackTrace();
         }
     }           
-
-    public void executeSkill(){
-
-        // 检查是否需要停止运行，条件是:存在前端没有回应消息
-        if(!isAllOK())
-            return;
-
-        // 按照skillRunTime的值，按照不同的状态调用不同的函数栈顶技能
-        try {
-
-            SkillRunTime myself = skillHandleStack.getTop();
-            if(myself.skillHandleStage.isExecuteEffectState() && myself.mask[0] == 0) {
-                myself.skill.execute(myself);
-            } else if(myself.skillHandleStage.isAfterEffectState() && myself.mask[2] == 0){
-                // 退出当前技能状态，并向下传播本次处理的结果
-                myself.skill.afterEffect(myself);
-                skillHandleStack.popTop();
-            } else if(myself.mask[1] == 0) {
-                // 该状态好像不存在
-            }
-
-        } catch(RunningException re) {
-            re.printStackTrace();
-        }
-
-    }
 
     public ArrayList<Card> initStandard() {
         // 获得标准版的全部卡片
@@ -316,26 +372,25 @@ public class GameRunner implements MyService {
 
     public SkillRunTime launchNewSkill(String name, int sender) throws RunningException{
         
-        SkillRunTime res =  launchSkillCommonCode(name, sender);
-        skillHandleStack.spreadTop();
-        res.skill.launchMySelf(res);
-        
-        return res;
-    }
-    
-
-    public SkillRunTime launchSkillCommonCode(String name, int sender) throws RunningException {
-        
-        CommonSkill skill = skills.get("name");
+        CommonSkill skill = skills.get(name);
         if(skill == null) 
             throw new RunningException("找不到技能的引用");
-        skill.init();
         
-        SkillRunTime skillRunTime = skillHandleStack.getNew().init();
-        skillRunTime.skill = skill;
-        skillRunTime.sender = sender;
-        return skillRunTime;
+        skill.init();
+        SkillRunTime res = skillHandleStack.getNew().init();
+        res.skill = skill;
+        res.sender = sender;
+        
+        boolean[] tmp = ops[sender].playerSelect;
+        for(int i=0;i<tmp.length;i++) {
+            if()
+        }
+        res.accepters.add(accepter);                     
+        skillHandleStack.spreadTop();
+        res.skill.launchMySelf(res);
+        return null;
     }
+    
 
     public SkillRunTime launchDelaySkill(SkillDelayRun skillDelayRun, int accepter) throws RunningException {
         
@@ -363,12 +418,32 @@ public class GameRunner implements MyService {
         }
     }
     
-    // 出牌技能，参数是玩家、卡牌
-    public SkillRunTime playCard(int player, Card card) {
-        SkillRunTime res = skillHandleStack.getNew();
-        PlayCard playCard = (PlayCard)skills.get("PlayCard");
+    // 玩牌技能，参数是玩家、卡牌、卡牌目标对象可选
+    public SkillRunTime playCard(int player, Card card) throws RunningException{
         
-        return null;
+        SkillRunTime res = skillHandleStack.getNew();
+        
+        CommonSkill skill = skills.get("PlayCard");
+        res.sender = player;
+        res.skill = skill;
+        PlayCard playCard = (PlayCard)skill;
+        playCard.cardToUse = card;
+        skillHandleStack.spreadTop();
+        
+        res.skill.launchMySelf(res);
+        
+        return res;
+    }
+
+    public void setiThAck(int i) {
+        
+        try{
+            if(i>=playersName.size() || i<0)
+                throw new RunningException("确认错误");
+            this.synchornization[i] = 1;
+        }catch(RunningException re) {
+            re.printStackTrace();
+        }
     }
 
     public void shuffleCard(ArrayList<Card> cards) {
@@ -385,6 +460,10 @@ public class GameRunner implements MyService {
         for(int i=0;i<synchornization.length;i++)
             synchornization[i] = 0;
     }
+
+    public void sendInteractionData(int ...players) {
+
+    }   
 
     // 向一名玩家发送指定的数据，而其余玩家接受不同的数据
     public void sendSeparateData(int p1, JSONObject data1, JSONObject data2, SkillRunTime skillRunTime) {
@@ -411,6 +490,5 @@ public class GameRunner implements MyService {
         dataUpdate.remove("data");
     }
 
- 
-
+    
 }
