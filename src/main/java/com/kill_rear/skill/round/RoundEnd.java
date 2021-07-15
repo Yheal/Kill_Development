@@ -50,6 +50,11 @@ public class RoundEnd extends CommonSkill{
         myself.skillHandleStage.setAfterExecute();
     }
 
+    @Override
+    public void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException {
+        
+    }
+
 
 
         

@@ -1,4 +1,4 @@
-package com.kill_rear.skill.card;
+package com.kill_rear.skill.Support;
 
 import com.kill_rear.common.util.RunningException;
 import com.kill_rear.gamebo.game.operate.Input;
@@ -7,10 +7,9 @@ import com.kill_rear.skill.CommonSkill;
 import com.kill_rear.skill.SkillRunTime;
 import com.kill_rear.skill.util.SkillType;
 
-// sha的功能
-public class Sha extends CommonSkill {
+public class Damage extends CommonSkill{
 
-    public Sha(GameRunner runner) {
+    public Damage(GameRunner runner) {
         super(runner);
         //TODO Auto-generated constructor stub
     }
@@ -65,6 +64,12 @@ public class Sha extends CommonSkill {
 
     @Override
     public void acceptInput(SkillRunTime myself, Input input) throws RunningException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException {
         // TODO Auto-generated method stub
         
     }

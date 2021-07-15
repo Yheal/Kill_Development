@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 
@@ -17,6 +16,7 @@ import com.kill_rear.gamebo.game.edition.CardSet;
 import com.kill_rear.gamebo.game.edition.EditionType;
 import com.kill_rear.gamebo.game.edition.Standard;
 import com.kill_rear.gamebo.game.general.General;
+import com.kill_rear.gamebo.game.operate.ChooseState;
 import com.kill_rear.gamebo.game.operate.Input;
 import com.kill_rear.gamebo.game.operate.InputType;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
@@ -27,7 +27,6 @@ import com.kill_rear.service.ajax.SkillService;
 import com.kill_rear.service.common.SessionPools;
 import com.kill_rear.skill.CommonSkill;
 import com.kill_rear.skill.SkillRunTime;
-import com.kill_rear.skill.Support.DisCard;
 import com.kill_rear.skill.Support.PlayCard;
 import com.kill_rear.skill.round.Round;
 import com.kill_rear.skill.util.SkillDelayRun;
@@ -103,10 +102,8 @@ public class GameRunner implements MyService {
 
         for(int i = 0; i < playerAmounts;i++) {
             General gen = generalService.queryGeneralById(players.get(i).getSecond());
-            ops[i] = new OperationPanel(playerAmounts, gen.blood, gen);
-            
-            for(int j=0;j<playerAmounts;j++) 
-                ops[i].playerSelect[j] = false;
+            ops[i] = new OperationPanel(playerAmounts, i, gen.blood, gen);
+        
 
             for(CommonSkill skill:gen.skills) 
                 this.skills.put(skill.getName(), skill);
@@ -155,6 +152,17 @@ public class GameRunner implements MyService {
     public void characterDead(int playerNumber) {
         // 角色死亡处理逻辑
     } 
+
+    public void calculateTargetPlayer(SkillRunTime myself) {
+        
+        OperationPanel op = ops[myself.sender];
+        for(int i=0;i<op.playerSelect.length;i++) {
+            if(op.playerSelect[i] == ChooseState.CHOOSE) 
+                myself.accepters.add(i);
+        }  
+        if(myself.accepters.size() == 0)
+            myself.accepters.add(myself.sender);
+    }
 
     public void executeSkill() throws RunningException{
 
@@ -381,14 +389,12 @@ public class GameRunner implements MyService {
         res.skill = skill;
         res.sender = sender;
         
-        boolean[] tmp = ops[sender].playerSelect;
-        for(int i=0;i<tmp.length;i++) {
-            if()
-        }
-        res.accepters.add(accepter);                     
+        calculateTargetPlayer(res);
+        
         skillHandleStack.spreadTop();
         res.skill.launchMySelf(res);
-        return null;
+        
+        return res;
     }
     
 
@@ -426,10 +432,12 @@ public class GameRunner implements MyService {
         CommonSkill skill = skills.get("PlayCard");
         res.sender = player;
         res.skill = skill;
+        calculateTargetPlayer(res);
+
         PlayCard playCard = (PlayCard)skill;
         playCard.cardToUse = card;
+
         skillHandleStack.spreadTop();
-        
         res.skill.launchMySelf(res);
         
         return res;

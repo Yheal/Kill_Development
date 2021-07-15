@@ -22,8 +22,7 @@ public abstract class CommonSkill {
     // -效果执行完毕之后
     public void afterEffect(SkillRunTime myself) { myself.result = "ok"; }
 
-    // 设置前端可以被响应的对象
-    public void setGameObjSelectable(int target){}
+    // 注意，很之前的状态有关，也就是和启动自己的技能有关
 
     public CommonSkill init(){ return this; }
 
@@ -38,4 +37,6 @@ public abstract class CommonSkill {
     public abstract boolean modifyActivatedSkill(SkillRunTime skillRunTime);
     public abstract void execute(SkillRunTime myself) throws RunningException;
     public abstract void acceptInput(SkillRunTime myself,Input input) throws RunningException;
+    public abstract void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException;
+
 }

@@ -109,7 +109,7 @@ public class Round extends CommonSkill{
             case 1:
                 if(stages[next] == 1){
                     // 可以执行准备阶段
-                    runner.launchNewSkill("RoundPrepare", curPlayer, curPlayer);    
+                    runner.launchNewSkill("RoundPrepare", curPlayer);    
                 } else
                     next++;
                 break;
@@ -117,41 +117,46 @@ public class Round extends CommonSkill{
             case 2:
 
                 if(stages[next] == 1){
-                    runner.launchNewSkill("RoundJudge", curPlayer, curPlayer);    
+                    runner.launchNewSkill("RoundJudge", curPlayer);    
                 } else
                     next++;
                 break;
 
             case 3:
                 if(stages[next] == 1){
-                    runner.launchNewSkill("RoundGetCard", curPlayer, curPlayer);    
+                    runner.launchNewSkill("RoundGetCard", curPlayer);    
                 } else
                     next++;
                 break;
     
             case 4:
                 if(stages[next] == 1) {
-                    runner.launchNewSkill("RoundPlay", curPlayer, curPlayer);    
+                    runner.launchNewSkill("RoundPlay", curPlayer);    
                 } else
                     next++;
                     break;
     
             case 5:
                 if(stages[next] == 1){
-                    runner.launchNewSkill("RoundDiscard", curPlayer, curPlayer);    
+                    runner.launchNewSkill("RoundDiscard", curPlayer);    
                 } else
                     next++;
                 break;
             
             case 6:
                 if(stages[next] == 1) {
-                    runner.launchNewSkill("RoundEnd", curPlayer, curPlayer);    
+                    runner.launchNewSkill("RoundEnd", curPlayer);    
                 } else 
                     // 不可以执行回合结束阶段，那么说明直接到下一位玩家
                     turnToNext(myself);
                 break;
                 
             }
+    }
+
+    @Override
+    public void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException {
+        // nothing
     }
 
 

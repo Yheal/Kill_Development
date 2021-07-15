@@ -5,6 +5,7 @@ import java.util.List;
 import com.kill_rear.common.util.RunningException;
 import com.kill_rear.gamebo.game.card.Card;
 import com.kill_rear.gamebo.game.general.General;
+import com.kill_rear.gamebo.game.operate.ChooseState;
 import com.kill_rear.gamebo.game.operate.Input;
 import com.kill_rear.gamebo.game.operate.OperationPanel;
 import com.kill_rear.service.twoplayers.GameRunner;
@@ -89,8 +90,8 @@ public class RoundAction extends CommonSkill {
         switch(input.type.name()) {
             case "PLAYER":
                 num = Integer.parseInt(input.value);
-                op.playerSelect[num] = true;
-                letSkillSetGameObjSelectable(myself.sender);
+                op.setPlayerChoosen(num);
+                letGameObjSelectable(myself);
                 break;
 
             case "GENERALSKILL":
@@ -99,13 +100,13 @@ public class RoundAction extends CommonSkill {
                 for(int i=0;i<skills.size();i++) {
                     if(skills.get(i).getName().equals(input.value)) {
                         this.generalSkillPrepareToLaunch = skills.get(i);
-                        op.general.skillSelectAble.set(i, true);
+                        op.general.chooseStates.set(i, ChooseState.CHOOSE);
                     }
                 }
                 if(this.generalSkillPrepareToLaunch == null)
                     throw(new RunningException("找不到技能引用"));
                 
-                letSkillSetGameObjSelectable(myself.sender);
+                letGameObjSelectable(myself);
                 break;
 
             case "HANDCARD":
@@ -114,7 +115,7 @@ public class RoundAction extends CommonSkill {
                 num = Integer.parseInt(input.value);
                 for(Card card:op.handCards) {
                     if(card.num == num) {
-                        card.selectAble = true;
+                        card.chooseState = ChooseState.CHOOSE;
                         target = card;
                     }
                 }
@@ -124,29 +125,28 @@ public class RoundAction extends CommonSkill {
                 if(generalSkillPrepareToLaunch != null || equipmentCard !=null) {
                     // nothing
                 } else if(handCardPrepareToThrow != null) {
-                    handCardPrepareToThrow.selectAble = false;
+                    handCardPrepareToThrow.chooseState = ChooseState.NOTCHOOSE;
                     handCardPrepareToThrow = target;
                 } else{
                     handCardPrepareToThrow = target;
                 }
             
-                letSkillSetGameObjSelectable(myself.sender);
+                letGameObjSelectable(myself);
                 break;
 
             case "EQUIPMENT":
-                // 检查发动条件
-                if(isExitPreparingSkill() == false)
-                    throw(new RunningException("错误的控制"));
+                // 检查发动条件    
                 num = Integer.parseInt(input.value);
+                op.setEqiupmentChoose(num);
                 for(Card card:op.equipment) {
                     if(card.num == num) {
                         this.equipmentCard = card;
-                        this.equipmentCard.selectAble = true;
+                        this.equipmentCard.chooseState = ChooseState.CHOOSE;
                     }
                 }
                 if(this.equipmentCard == null)
                     throw(new RunningException("找不到技能的引用"));
-                letSkillSetGameObjSelectable(myself.sender);
+                letGameObjSelectable(myself);
                 break;
 
             case "CARD":
@@ -178,16 +178,16 @@ public class RoundAction extends CommonSkill {
         }
     }
     
-
-    private void letSkillSetGameObjSelectable(int target) throws RunningException {
+    public void letGameObjSelectable(SkillRunTime myself) throws RunningException {
 
         if(generalSkillPrepareToLaunch != null) {
-            generalSkillPrepareToLaunch.setGameObjSelectable(target);
+            generalSkillPrepareToLaunch.setGameObjSelectable(myself, myself.sender);
         }else if(handCardPrepareToThrow != null) {
-            handCardPrepareToThrow.skill.setGameObjSelectable(target);
+            handCardPrepareToThrow.skill.setGameObjSelectable(myself, myself.sender);
         }else if(equipmentCard != null){
-            equipmentCard.skill.setGameObjSelectable(target);
-        } 
+            equipmentCard.skill.setGameObjSelectable(myself, myself.sender);
+        }
+        runner.sendInteractionData(myself.sender); 
     }
 
     private void launchCurrentSkill(SkillRunTime myself) throws RunningException {
@@ -232,7 +232,7 @@ public class RoundAction extends CommonSkill {
 
         // 没有启动技能前，禁止选中其他玩家
         for(int i=0;i<op.playerSelect.length;i++)
-            op.playerSelect[i] = false;
+            op.playerSelect[i] = ChooseState.UNSELECTABLEANDHIDE;
 
         
         for(int i=0;i < op.handCards.size();i++) {
@@ -241,50 +241,49 @@ public class RoundAction extends CommonSkill {
 
             switch(card.skill.getName()) {
                 case "Shan":
-                    card.selectAble = false;
+                    card.chooseState = ChooseState.UNSELECTABLEANDHIDE;
                     break;
 
                 case "Tao":
                     if(op.blood == op.maxBlood)
-                        card.selectAble = false;
+                        card.chooseState = ChooseState.UNSELECTABLEANDHIDE;
                     else
-                        card.selectAble = true;
+                        card.chooseState = ChooseState.NOTCHOOSE;
                     break;
                 
                 case "Sha":
                     if(op.shaNumbers <= 0)
-                        card.selectAble = false;
+                        card.chooseState = ChooseState.UNSELECTABLEANDHIDE;
                     else
-                        card.selectAble = true;
+                        card.chooseState = ChooseState.CHOOSE;
 
                 case "WuXiekeJi":
-                    card.selectAble = false;
+                    card.chooseState = ChooseState.UNSELECTABLEANDHIDE;
                     break;
                 
                 case "ShanDian":
-                    boolean has = false;
+                    card.chooseState = ChooseState.NOTCHOOSE;
                     for(SkillDelayRun skillDelayRun:op.judge) {
                         if(skillDelayRun.card != null && skillDelayRun.skill.getName() == "ShanDian") 
-                            has = true;
+                            card.chooseState = ChooseState.UNSELECTABLEANDHIDE;
                     }
-                    card.selectAble = !has;
                     break;
 
                 default:
-                    card.selectAble = true;
+                    card.chooseState = ChooseState.NOTCHOOSE;
             } 
         }
         
-        op.equipment[0].selectAble = true;
+        op.equipment[0].chooseState = ChooseState.NOTCHOOSE;
         for(int i=1;i<4;i++) 
-            op.equipment[i].selectAble = false;
+            op.equipment[i].chooseState = ChooseState.UNSELECTABLEANDHIDE;
 
         General general = op.general;
         for(int i=0;i<general.skills.size();i++) {
             if(general.skills.get(i).isActivatable(myself)) 
-                op.general.skillSelectAble.set(i, true);
+                op.general.chooseStates.set(i, ChooseState.NOTCHOOSE);
             else
-                op.general.skillSelectAble.set(i, false);
+                op.general.chooseStates.set(i, ChooseState.UNSELECTABLEANDHIDE);
         }
         
         // 按钮，第一个按钮，不可选中，第二个内容是游戏结束。
@@ -302,6 +301,9 @@ public class RoundAction extends CommonSkill {
         
         runner.sendInteractionData(myself.sender);
     }
+
+    @Override
+    public void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException {}
 
 
 

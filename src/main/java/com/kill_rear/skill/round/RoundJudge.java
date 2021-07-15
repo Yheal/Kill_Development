@@ -68,4 +68,10 @@ public class RoundJudge extends CommonSkill {
         runner.setiThAck(input.player);
     }
 
+
+    @Override
+    public void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException {
+        
+    }
+
 }

@@ -75,4 +75,9 @@ public class RoundGetcard extends CommonSkill{
         runner.sendSeparateData(myself.sender, data1, data2, myself);
     }
 
+    @Override
+    public void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException {
+        
+    }
+
 }
