@@ -30,13 +30,6 @@ public class Round extends CommonSkill{
         next =  0; 
     }
 
-    private void turnToNext(SkillRunTime myself) {
-        sendMessage(myself, "end");
-        for(int i=0;i<6;i++)
-            stages[i] = 1;
-        runner.curPlayer = (runner.curPlayer + 1) % runner.playersName.size();
-        next = 0;
-    }
 
     @Override
     public boolean acceptResult(SkillRunTime myself ,SkillRunTime previous)
@@ -56,11 +49,23 @@ public class Round extends CommonSkill{
             }
         return false;
     }
+
     
     @Override
     public void acceptInput(SkillRunTime myself, Input input) throws RunningException {
         // nothing    
     }
+
+    private void turnToNext(SkillRunTime myself) {
+        sendMessage(myself, "end");
+        for(int i=0;i<6;i++)
+            stages[i] = 1;
+        runner.curPlayer = (runner.curPlayer + 1) % runner.playersName.size();
+        next = 0;
+    }
+
+   
+    
 
     @Override
     public void launchMySelf(SkillRunTime myself) throws RunningException{}
@@ -92,9 +97,10 @@ public class Round extends CommonSkill{
 
     @Override
     public void execute(SkillRunTime myself) throws RunningException {
+        
         int curPlayer = myself.sender;
         OperationPanel op =  runner.ops[curPlayer];
-        myself.skillHandleStage.setAccept();  
+        myself.skillHandleStage.setExecute(); 
 
         // 执行一个个回合的阶段
         switch(next) {
@@ -156,6 +162,11 @@ public class Round extends CommonSkill{
 
     @Override
     public void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException {
+        // nothing
+    }
+
+    @Override
+    public void end(SkillRunTime myself) throws RunningException {
         // nothing
     }
 

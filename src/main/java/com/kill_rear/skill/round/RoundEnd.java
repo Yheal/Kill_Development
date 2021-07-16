@@ -55,6 +55,10 @@ public class RoundEnd extends CommonSkill{
         
     }
 
+    @Override
+    public void end(SkillRunTime myself) throws RunningException {
+    }
+
 
 
         

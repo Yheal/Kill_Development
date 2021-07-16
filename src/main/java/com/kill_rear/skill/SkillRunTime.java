@@ -25,7 +25,7 @@ public class SkillRunTime {
         mask[2] = 0;
         accepters.clear();
         skill = null;
-        skillHandleStage.setExecute();
+        skillHandleStage.setBeforeExecute();
         beforeExecuteCheck = false;
         afterExecuteCheck = false;
         return this;

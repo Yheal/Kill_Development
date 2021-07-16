@@ -443,6 +443,10 @@ public class GameRunner implements MyService {
         return res;
     }
 
+    public void setLoopExecute(SkillRunTime skillRunTime) {
+        skillRunTime.skillHandleStage.setBeforeExecute();
+    }
+    
     public void setiThAck(int i) {
         
         try{

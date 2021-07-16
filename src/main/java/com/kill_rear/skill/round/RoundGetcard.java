@@ -77,7 +77,12 @@ public class RoundGetcard extends CommonSkill{
 
     @Override
     public void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException {
-        
+        // nothing
+    }
+
+    @Override
+    public void end(SkillRunTime myself) throws RunningException {
+        // nothing
     }
 
 }

@@ -37,6 +37,9 @@ public class Sha extends CommonSkill {
 
     @Override
     public boolean acceptResult(SkillRunTime myself, SkillRunTime previous) {
+        
+
+
         return true;
     }
 
@@ -131,6 +134,11 @@ public class Sha extends CommonSkill {
         } else {
             op.remainLastPlayerChoosen();
         }
+    }
+
+    @Override
+    public void end(SkillRunTime myself) throws RunningException {
+        
     }
     
 }

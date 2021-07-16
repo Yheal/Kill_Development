@@ -54,8 +54,11 @@ public class RoundJudge extends CommonSkill {
            myself.skillHandleStage.setAfterExecute();
            return;
         }        
-        // 启动延迟出牌技能
-        myself.skillHandleStage.setAccept();
+        
+        // 再次成为执行态
+        runner.setLoopExecute(myself);
+        
+        // 启动延迟出牌
         SkillDelayRun skillDelayRun = curPanel.judge.get(0);
         curPanel.judge.remove(0);
         runner.launchDelaySkill(skillDelayRun, runner.curPlayer);
@@ -71,6 +74,13 @@ public class RoundJudge extends CommonSkill {
 
     @Override
     public void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException {
+        
+    }
+
+
+    @Override
+    public void end(SkillRunTime myself) throws RunningException {
+        // TODO Auto-generated method stub
         
     }
 

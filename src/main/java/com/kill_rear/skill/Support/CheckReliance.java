@@ -74,5 +74,11 @@ public class CheckReliance extends CommonSkill {
         // TODO Auto-generated method stub
         
     }
+
+    @Override
+    public void end(SkillRunTime myself) throws RunningException {
+        // TODO Auto-generated method stub
+        
+    }
         
 }

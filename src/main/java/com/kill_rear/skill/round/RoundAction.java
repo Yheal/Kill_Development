@@ -305,6 +305,12 @@ public class RoundAction extends CommonSkill {
     @Override
     public void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException {}
 
+    @Override
+    public void end(SkillRunTime myself) throws RunningException {
+        // TODO Auto-generated method stub
+        
+    }
+
 
 
 }

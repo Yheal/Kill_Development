@@ -41,7 +41,7 @@ public class RoundDisCard extends CommonSkill{
                         
                     }
                 case BUTTON:
-
+                    // 点击确认之后，我们设置为
                 default:
                     throw new RunningException("控制错误");
             }
@@ -87,7 +87,7 @@ public class RoundDisCard extends CommonSkill{
             // 执行弃牌操作
             op.setOnlyHandCardSelectable();
             runner.sendInteractionData(player);
-            myself.skillHandleStage.setAccept();
+            myself.skillHandleStage.setAfterExecute();   // 应该是接受input的状态 
         }else {
             myself.skillHandleStage.setAfterExecute();
         }
@@ -96,6 +96,12 @@ public class RoundDisCard extends CommonSkill{
 
     @Override
     public void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException {
+        
+    }
+
+
+    @Override
+    public void end(SkillRunTime myself) throws RunningException {
         
     }
 }

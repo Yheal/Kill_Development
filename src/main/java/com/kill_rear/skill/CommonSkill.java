@@ -33,10 +33,16 @@ public abstract class CommonSkill {
     public abstract String getName();
     public abstract boolean isNeedCheck();
     public abstract SkillType getSkillType();
-    public abstract boolean acceptResult(SkillRunTime myself ,SkillRunTime previous);
     public abstract boolean modifyActivatedSkill(SkillRunTime skillRunTime);
-    public abstract void execute(SkillRunTime myself) throws RunningException;
-    public abstract void acceptInput(SkillRunTime myself,Input input) throws RunningException;
     public abstract void setGameObjSelectable(SkillRunTime previous, int target) throws RunningException;
+
+    // 接受上层的结果
+    public abstract boolean acceptResult(SkillRunTime myself ,SkillRunTime previous);
+    // 执行效果
+    public abstract void execute(SkillRunTime myself) throws RunningException;
+    // 效果执行结束后
+    public abstract void end(SkillRunTime myself) throws RunningException;
+    // 接受玩家的输入
+    public abstract void acceptInput(SkillRunTime myself,Input input) throws RunningException;
 
 }
